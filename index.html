@@ -315,8 +315,9 @@
                     </div>
 
                     <div>
-                        <label for="regNumber" class="font-arcade-body text-black" data-key="labelRegNum">REGISTRATION_NUMBER:</label>
-                        <input type="text" id="regNumber" name="regNumber" class="form-input w-full" required>
+                        <!-- UPDATED: Changed label data-key and input id/name -->
+                        <label for="idNumber" class="font-arcade-body text-black" data-key="labelIDNum">ID_Number / Register:</label>
+                        <input type="text" id="idNumber" name="idNumber" class="form-input w-full" required>
                     </div>
 
                     <div>
@@ -327,9 +328,16 @@
                             <option value="Management & Technology" data-key="collegeMT">Management & Technology</option>
                             <option value="Engineering" data-key="collegeEng">Engineering</option>
                             <option value="Logistics" data-key="collegeLog">Logistics</option>
-                            <!-- This is where your custom change is -->
                             <option value="Archaeology" data-key="collegeArch">Archaeology</option>
+                            <!-- NEW: "Other" option -->
+                            <option value="Other" data-key="collegeOther">Other</option>
                         </select>
+                    </div>
+
+                    <!-- NEW: "Other College" text field container, hidden by default -->
+                    <div id="other-college-container" class="hidden">
+                        <label for="otherCollege" class="font-arcade-body text-black" data-key="labelOtherCollege">Please specify:</label>
+                        <input type="text" id="otherCollege" name="otherCollege" class="form-input w-full">
                     </div>
                     
                     <div>
@@ -372,6 +380,10 @@
         const successMessage = document.getElementById('success-message');
         const closePopupButton = document.getElementById('close-popup');
         const langToggle = document.getElementById('lang-toggle');
+        // NEW: Get the college dropdown and the "Other" container
+        const collegeSelect = document.getElementById('college');
+        const otherCollegeContainer = document.getElementById('other-college-container');
+
 
         let currentLang = 'en'; // Default language
 
@@ -379,7 +391,7 @@
         const translations = {
             'en': {
                 langToggle: 'AR',
-                loading: 'LOADING...', // Reverted
+                loading: 'LOADING...', 
                 mainTitle: 'GDG Game Dev Session',
                 mainSubtitle: 'Click the machine to register!',
                 pressStart: 'PRESS START',
@@ -387,15 +399,16 @@
                 formTitle: 'Register for Game Dev Session',
                 labelName: 'PLAYER_NAME:',
                 labelEmail: 'PLAYER_EMAIL:',
-                labelRegNum: 'REGISTRATION_NUMBER:',
+                labelIDNum: 'ID_Number / Register Number:', // UPDATED
                 labelCollege: 'YOUR_COLLEGE:',
                 selectCollege: 'Select your college...',
                 collegeCS: 'Computer Science',
                 collegeMT: 'Management & Technology',
                 collegeEng: 'Engineering',
                 collegeLog: 'Logistics',
-                // *** FIX: Removed the trailing comma ***
                 collegeArch: 'Archaeology',
+                collegeOther: 'Other', // NEW
+                labelOtherCollege: 'Please specify:', // NEW
                 labelSource: 'HOW_DID_YOU_HEAR?:',
                 sourcePlaceholder: 'e.g., Facebook, friend, etc.',
                 joinButton: 'JOIN THE GAME',
@@ -407,7 +420,7 @@
             },
             'ar': {
                 langToggle: 'EN',
-                loading: '...جاري التحميل', // Reverted
+                loading: '...جاري التحميل', 
                 mainTitle: 'ورشة عمل GDG لتطوير الألعاب',
                 mainSubtitle: 'اضغط على الماكينة للتسجيل!',
                 pressStart: 'ابدأ اللعبة',
@@ -415,7 +428,7 @@
                 formTitle: 'التسجيل في ورشة تطوير الألعاب',
                 labelName: ':اسم اللاعب',
                 labelEmail: ':البريد الإلكتروني',
-                labelRegNum: ':رقم التسجيل',
+                labelIDNum: ':رقم الهوية / رقم التسجيل', // UPDATED
                 labelCollege: ':كليتك',
                 selectCollege: '...اختر كليتك',
                 collegeCS: 'علوم الحاسب',
@@ -423,6 +436,8 @@
                 collegeEng: 'الهندسة',
                 collegeLog: 'اللوجستيات',
                 collegeArch: 'اثار وتراث حضاري',
+                collegeOther: 'أخرى', // NEW
+                labelOtherCollege: ':برجاء التحديد', // NEW
                 labelSource: ':كيف سمعت عنا؟',
                 sourcePlaceholder: '...فيسبوك، صديق، إلخ',
                 joinButton: 'انضم للعبة',
@@ -432,7 +447,7 @@
                 successSeeYou: 'نراك في الورشة',
                 successSurprise: '!ملاحظة: استعد لمفاجأة تعاون كبيرة مع المفضل لدى الجميع'
             }
-        };
+        }; 
         
         // --- REBUILT Translation Function ---
         function changeLanguage(lang) {
@@ -454,14 +469,14 @@
                     } else {
                         // Handle all other text content
                         element.textContent = langData[key];
+                        // THE ERROR WAS HERE. That stray text is GONE.
                     }
                 }
             });
 
-            // Special fix for the <select> placeholder color in Arabic
-            const collegeSelect = document.getElementById('college');
-            if (lang === 'ar' && collegeSelect.value === "") {
-                collegeSelect.classList.add('text-gray-500'); // Or your placeholder color
+            // Special fix for the <select> placeholder color
+            if (collegeSelect.value === "") {
+                collegeSelect.classList.add('text-gray-500');
             } else {
                 collegeSelect.classList.remove('text-gray-500');
             }
@@ -469,7 +484,6 @@
 
 
         // --- 1. Loading Screen ---
-        // Reverted to original auto-fade logic
         window.addEventListener('load', () => {
             setTimeout(() => {
                 loadingScreen.classList.add('opacity-0', 'transition-opacity', 'duration-1000');
@@ -493,15 +507,10 @@
 
 
         // --- 3. Show Pop-up ---
-        // Listen for the zoom animation to finish
         arcadeMachine.addEventListener('transitionend', (event) => {
-            // Make sure we're listening for the 'transform' property
             if (event.propertyName === 'transform' && document.body.classList.contains('zooming')) {
-                // Show the popup overlay
                 popupOverlay.classList.remove('hidden');
-                // Ensure modal pop-in animation is reset/set
                 popupModal.style.animation = 'pop-in 0.3s ease-out';
-                // Hide the main content
                 mainContent.classList.add('hidden');
             }
         });
@@ -509,34 +518,26 @@
 
         // --- 3. Close Pop-up & Reset Form ---
         closePopupButton.addEventListener('click', () => {
-            // 1. Add the pop-out animation to the modal
             popupModal.style.animation = 'pop-out 0.3s ease-in forwards';
             
-            // 2. Listen for the animation to finish
             popupModal.addEventListener('animationend', () => {
-                // 3. Hide the overlay
                 popupOverlay.classList.add('hidden');
-                
-                // 4. Reset the modal's animation style for next time
                 popupModal.style.animation = ''; 
-
-                // 5. Bring back main content (which will fade in)
                 mainContent.classList.remove('hidden');
-                
-                // 6. Remove the zoom class to animate the machine back
                 document.body.classList.remove('zooming');
 
-                // 7. Reset the form
                 registrationForm.reset();
                 registrationForm.classList.remove('hidden');
                 successMessage.classList.add('hidden');
                 
-                // 8. Reset submit button text
+                // NEW: Hide the "Other College" container on reset
+                otherCollegeContainer.classList.add('hidden');
+
                 const submitButton = registrationForm.querySelector('.register-button');
                 submitButton.disabled = false;
                 submitButton.textContent = translations[currentLang].joinButton;
 
-            }, { once: true }); // { once: true } auto-removes the listener
+            }, { once: true });
         });
 
 
@@ -568,17 +569,13 @@
             .catch(error => console.error('Error (ignored):', error));
 
             setTimeout(() => {
-                // Update success message with player's name
                 const playerName = nameInput.value || (currentLang === 'ar' ? 'لاعب واحد' : 'PLAYER ONE');
                 const successName = successMessage.querySelector('#success-name');
                 successName.textContent = playerName;
                 
-                // Show success, hide form
                 registrationForm.classList.add('hidden');
                 successMessage.classList.remove('hidden');
-
-                // Don't re-enable button here, it's reset when modal is closed
-            }, 1000); // 1 second delay
+            }, 1000); 
         }); 
 
         // --- 5. Language Toggle ---
@@ -586,25 +583,33 @@
             const newLang = (currentLang === 'en') ? 'ar' : 'en';
             changeLanguage(newLang);
             
-            // Also update the submit button text if it's visible
             const submitButton = registrationForm.querySelector('.register-button');
             if (!submitButton.disabled) {
                 submitButton.textContent = translations[currentLang].joinButton;
             }
         });
 
-        // --- 6. Fix for Arabic Select Placeholder ---
-        document.getElementById('college').addEventListener('change', (e) => {
+        // --- 6. Show/Hide "Other College" field ---
+        collegeSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'Other') {
+                otherCollegeContainer.classList.remove('hidden');
+            } else {
+                otherCollegeContainer.classList.add('hidden');
+            }
+            
+            // Fix for placeholder color
             if (e.target.value === "") {
                  e.target.classList.add('text-gray-500');
             } else {
                  e.target.classList.remove('text-gray-500');
             }
         });
+
         // Initial check on load
         changeLanguage(currentLang);
 
     </script>
 </body>
 </html>
+
 
