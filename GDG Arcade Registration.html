@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GDG Game Dev Session</title>
+    
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Load retro arcade font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Added 'Changa' for Arabic -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Changa:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS for the arcade theme, animations, and components -->
+    <style>
+        body {
+            /* Use Inter as a fallback, but prioritize the retro fonts */
+            font-family: 'VT323', 'Inter', sans-serif;
+            overflow: hidden; /* Prevent scrolling during animations */
+        }
+        
+        /* Font classes */
+        .font-arcade-title { font-family: 'Press Start 2P', cursive; }
+        .font-arcade-body { font-family: 'VT323', monospace; font-size: 1.5rem; }
+        .font-arabic { font-family: 'Changa', sans-serif; }
+
+        /* RTL (Right-to-Left) styles for Arabic */
+        html[dir="rtl"] .font-arcade-title {
+            font-family: 'Changa', sans-serif;
+            font-weight: 700;
+        }
+        html[dir="rtl"] .font-arcade-body {
+            font-family: 'Changa', sans-serif;
+            font-size: 1.25rem; /* Changa is more readable */
+            font-weight: 400;
+        }
+        html[dir="rtl"] label {
+            text-align: right;
+            display: block;
+        }
+        html[dir="rtl"] input, html[dir="rtl"] select {
+            text-align: right;
+        }
+        html[dir="rtl"] select {
+            /* Move dropdown arrow */
+            background-position: left 0.5rem center; 
+            padding-right: 0.5rem; /* Add padding for text */
+            padding-left: 2rem; /* Make room for arrow on left */
+        }
+        html[dir="rtl"] .title-bar span {
+            margin-left: auto; /* Push title to the right */
+        }
+        html[dir="rtl"] .title-bar .close-button {
+            margin-right: auto; /* Push close button to the left */
+        }
+
+
+        /* --- Loading Screen --- */
+        #loading-screen {
+            background-color: #000;
+            animation: pulse-neon 2s infinite alternate;
+        }
+
+        @keyframes pulse-neon {
+            from { text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff; color: #ff00ff; }
+            to { text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff; color: #00ffff; }
+        }
+        
+        /* --- Arcade Background --- */
+        #main-content {
+            background: #1a0a24;
+            background-image: 
+                linear-gradient(rgba(120, 80, 200, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(120, 80, 200, 0.1) 1px, transparent 1px);
+            background-size: 40px 40px;
+            transition: opacity 0.5s ease-out; /* Added transition */
+            animation: scroll-background 60s linear infinite;
+        }
+
+        @keyframes scroll-background {
+            from { background-position: 0 0; }
+            to { background-position: -800px 800px; } /* Scrolls diagonally */
+        }
+
+
+        /* --- Language Toggle Button --- */
+        #lang-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 100;
+            background: #fff;
+            color: #000080;
+            border: 2px solid #000080;
+            padding: 8px 12px;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.75rem;
+            cursor: pointer;
+            box-shadow: 2px 2px 0 #000;
+        }
+        html[dir="rtl"] #lang-toggle {
+            right: auto;
+            left: 20px;
+        }
+        #lang-toggle:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0 0 0 #000;
+        }
+
+
+        /* --- Arcade Machine (CSS Art) --- */
+        #arcade-machine {
+            width: 300px; 
+            transition: transform 1.5s ease-in-out, opacity 1s ease-in-out;
+            cursor: pointer;
+        }
+        .cabinet-top {
+            width: 100%; height: 80px; 
+            background: #d10000; 
+            border-radius: 10px 10px 0 0;
+            border: 4px solid #444; 
+            border-bottom: none; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 -5px 15px rgba(255, 0, 0, 0.5); 
+        }
+        .cabinet-screen-area {
+            width: 100%; 
+            background: #333; 
+            padding: 20px; 
+            border-left: 4px solid #444; 
+            border-right: 4px solid #444; 
+            transform: perspective(100px) rotateX(5deg); 
+        }
+        .screen {
+            width: 100%; height: 200px; 
+            background: #000; 
+            border: 10px solid #222; 
+            border-radius: 5px; 
+            color: #00ff00; 
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            box-shadow: inset 0 0 20px #00ff00, 0 0 10px #00ff00; 
+            animation: flicker 3s infinite;
+        }
+        @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
+        .cabinet-controls {
+            width: 100%; height: 100px; 
+            background: #555; 
+            border: 4px solid #444; 
+            border-top: 10px solid #444; 
+            border-radius: 0 0 10px 10px; 
+            display: flex;
+            align-items: center; justify-content: space-around; padding: 0 30px; 
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); 
+        }
+        .joystick {
+            width: 30px; height: 30px; 
+            background: #ff0000; 
+            border-radius: 50%;
+            border: 4px solid #a00000; 
+            position: relative;
+        }
+        .joystick::before {
+            content: ''; position: absolute; width: 8px; height: 40px; 
+            background: #333;
+            bottom: 50%; left: 50%; transform: translateX(-50%); border-radius: 5px 5px 0 0; 
+        }
+        .arcade-button { 
+            width: 40px; height: 40px; 
+            border-radius: 50%; 
+            border: 4px solid #222; 
+            cursor: pointer; 
+        }
+        .button-blue { background: #0077ff; box-shadow: 0 0 10px #0077ff; } 
+        .button-green { background: #00ff00; box-shadow: 0 0 10px #00ff00; } 
+
+        
+        /* --- Zoom Animation --- */
+        .zooming #arcade-machine {
+            transform: scale(25);
+            opacity: 0;
+        }
+        .zooming #main-content {
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+        }
+
+
+        /* --- Fake Pop-up Window --- */
+        #popup-modal {
+            background: #c0c0c0; border: 2px solid #fff;
+            box-shadow: 2px 2px 0 #000, inset 2px 2px 0 #fff, inset -2px -2px 0 #808080;
+            animation: pop-in 0.3s ease-out;
+        }
+        
+        @keyframes pop-in {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes pop-out {
+            from {
+                opacity: 1;
+                transform: scale(1);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+        }
+
+        .title-bar {
+            background: #000080; color: #fff; padding: 4px 8px; display: flex;
+            justify-content: space-between; align-items: center; font-family: 'VT323', monospace;
+            font-size: 1.25rem;
+        }
+        .close-button {
+            background: #c0c0c0; border: 1px solid #fff;
+            box-shadow: 1px 1px 0 #000, inset 1px 1px 0 #fff, inset -1px -1px 0 #808080;
+            color: #000; width: 20px; height: 20px; font-family: sans-serif;
+            font-weight: bold; line-height: 18px; text-align: center; cursor: pointer;
+        }
+        .close-button:active { box-shadow: inset 1px 1px 0 #000; border: 1px solid #808080; }
+
+        /* Form input styling */
+        .form-input {
+            background: #fff; border: 2px solid #808080;
+            box-shadow: inset 1px 1px 0 #000; padding: 8px;
+            font-family: 'VT323', monospace; font-size: 1.25rem; color: #000;
+        }
+        .form-input::placeholder { color: #808080; opacity: 1; }
+        .form-input:required:invalid { color: #808080; }
+        html[dir="rtl"] .form-input:required:invalid { color: #808080; }
+        
+        .register-button {
+            font-family: 'Press Start 2P', cursive; background: #00ff00;
+            color: #000; border: 4px solid #000; padding: 12px 20px;
+            box-shadow: 0 4px 0 #000; transition: all 0.1s ease;
+        }
+        html[dir="rtl"] .register-button {
+            font-family: 'Changa', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+        .register-button:active { transform: translateY(4px); box-shadow: 0 0px 0 #000; }
+        
+    </style>
+</head>
+<body class="bg-black text-white">
+
+    <!-- ===== Language Toggle Button ===== -->
+    <button id="lang-toggle" data-key="langToggle">AR</button>
+
+    <!-- ===== LOADING SCREEN ===== -->
+    <div id="loading-screen" class="fixed inset-0 z-50 flex items-center justify-center">
+        <!-- Text reverted to original -->
+        <h1 class="font-arcade-title text-3xl md:text-5xl" data-key="loading">LOADING...</h1>
+    </div>
+
+    <!-- ===== MAIN ARCADE CONTENT ===== -->
+    <main id="main-content" class="h-screen w-screen flex flex-col items-center justify-center p-8 opacity-0">
+        <h2 class="font-arcade-title text-2xl md:text-4xl text-center text-white mb-4" style="text-shadow: 0 0 10px #ff00ff;" data-key="mainTitle">GDG Game Dev Session</h2>
+        <p class="font-arcade-body text-xl md:text-2xl text-cyan-300 mb-8" data-key="mainSubtitle">Click the machine to register!</p>
+        
+        <!-- The CSS Arcade Machine -->
+        <div id="arcade-machine">
+            <div class="cabinet-top"><h3 class="font-arcade-title text-lg text-yellow-300" style="text-shadow: 2px 2px #000;">GAME DEV</h3></div>
+            <div class="cabinet-screen-area">
+                <div class="screen font-arcade-body">
+                    <p class="text-xl mb-4">GDG PRESENTS</p>
+                    <p class="text-2xl animate-pulse" data-key="pressStart">PRESS START</p>
+                </div>
+            </div>
+            <div class="cabinet-controls">
+                <div class="joystick"></div>
+                <div class="flex space-x-4">
+                    <div class="arcade-button button-blue"></div>
+                    <div class="arcade-button button-green"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- ===== FAKE POP-UP MODAL ===== -->
+    <div id="popup-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-10 flex items-center justify-center p-4 hidden">
+        <div id="popup-modal" class="w-full max-w-md z-20">
+            <!-- Title Bar -->
+            <div class="title-bar">
+                <span data-key="windowTitle">GDG_REG.EXE</span>
+                <div id="close-popup" class="close-button">X</div>
+            </div>
+            
+            <!-- Modal Content -->
+            <div class="p-6">
+                <!-- Registration Form -->
+                <form id="registration-form" class="space-y-4">
+                    <h3 class="font-arcade-title text-xl text-black" data-key="formTitle">Register for Game Dev Session</h3>
+                    
+                    <div>
+                        <label for="name" class="font-arcade-body text-black" data-key="labelName">PLAYER_NAME:</label>
+                        <input type="text" id="name" name="name" class="form-input w-full" required>
+                    </div>
+                    
+                    <div>
+                        <label for="email" class="font-arcade-body text-black" data-key="labelEmail">PLAYER_EMAIL:</label>
+                        <input type="email" id="email" name="email" class="form-input w-full" required>
+                    </div>
+
+                    <div>
+                        <label for="regNumber" class="font-arcade-body text-black" data-key="labelRegNum">REGISTRATION_NUMBER:</label>
+                        <input type="text" id="regNumber" name="regNumber" class="form-input w-full" required>
+                    </div>
+
+                    <div>
+                        <label for="college" class="font-arcade-body text-black" data-key="labelCollege">YOUR_COLLEGE:</label>
+                        <select id="college" name="college" class="form-input w-full" required>
+                            <option value="" disabled selected data-key="selectCollege">Select your college...</option>
+                            <option value="Computer Science" data-key="collegeCS">Computer Science</option>
+                            <option value="Management & Technology" data-key="collegeMT">Management & Technology</option>
+                            <option value="Engineering" data-key="collegeEng">Engineering</option>
+                            <option value="Logistics" data-key="collegeLog">Logistics</option>
+                            <option value="Architecture" data-key="collegeArch">Architecture</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label for="source" class="font-arcade-body text-black" data-key="labelSource">HOW_DID_YOU_HEAR?:</label>
+                        <input type="text" id="source" name="source" class="form-input w-full" required data-key="sourcePlaceholder" placeholder="e.g., Facebook, friend, etc.">
+                    </div>
+                    
+                    <div class="pt-4 flex justify-center">
+                        <button type="submit" class="register-button" data-key="joinButton">
+                            JOIN THE GAME
+                        </button>
+                    </div>
+                </form>
+                
+                <!-- Success Message -->
+                <div id="success-message" class="hidden text-center">
+                    <h3 class="font-arcade-title text-xl text-black mb-4" data-key="successTitle">REGISTRATION COMPLETE!</h3>
+                    <p class="font-arcade-body text-black">
+                        <span data-key="successThanks">Thanks for joining,</span>
+                        <span id="success-name" class="font-arcade-title text-purple-700">PLAYER ONE</span>!
+                        <br><br>
+                        <span data-key="successSeeYou">We'll see you at the session.</span>
+                        <br><br>
+                        <span class="text-purple-700" data-key="successSurprise">P.S. Get ready for a big collab surprise with everyone's favorite!</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== JAVASCRIPT LOGIC ===== -->
+    <script>
+        // Get all the elements we need
+        const loadingScreen = document.getElementById('loading-screen');
+        const mainContent = document.getElementById('main-content');
+        const arcadeMachine = document.getElementById('arcade-machine');
+        const popupOverlay = document.getElementById('popup-overlay');
+        const popupModal = document.getElementById('popup-modal');
+        const registrationForm = document.getElementById('registration-form');
+        const successMessage = document.getElementById('success-message');
+        const closePopupButton = document.getElementById('close-popup');
+        const langToggle = document.getElementById('lang-toggle');
+
+        let currentLang = 'en'; // Default language
+
+        // --- 0. Translations Database ---
+        const translations = {
+            'en': {
+                langToggle: 'AR',
+                loading: 'LOADING...', // Reverted
+                mainTitle: 'GDG Game Dev Session',
+                mainSubtitle: 'Click the machine to register!',
+                pressStart: 'PRESS START',
+                windowTitle: 'GDG_REG.EXE',
+                formTitle: 'Register for Game Dev Session',
+                labelName: 'PLAYER_NAME:',
+                labelEmail: 'PLAYER_EMAIL:',
+                labelRegNum: 'REGISTRATION_NUMBER:',
+                labelCollege: 'YOUR_COLLEGE:',
+                selectCollege: 'Select your college...',
+                collegeCS: 'Computer Science',
+                collegeMT: 'Management & Technology',
+                collegeEng: 'Engineering',
+                collegeLog: 'Logistics',
+                collegeArch: 'Architecture',
+                labelSource: 'HOW_DID_YOU_HEAR?:',
+                sourcePlaceholder: 'e.g., Facebook, friend, etc.',
+                joinButton: 'JOIN THE GAME',
+                savingButton: 'SAVING...',
+                successTitle: 'REGISTRATION COMPLETE!',
+                successThanks: 'Thanks for joining,',
+                successSeeYou: "We'll see you at the session.",
+                successSurprise: "P.S. Get ready for a big collab surprise with everyone's favorite!"
+            },
+            'ar': {
+                langToggle: 'EN',
+                loading: '...جاري التحميل', // Reverted
+                mainTitle: 'ورشة عمل GDG لتطوير الألعاب',
+                mainSubtitle: 'اضغط على الماكينة للتسجيل!',
+                pressStart: 'ابدأ اللعبة',
+                windowTitle: 'GDG_REG.EXE',
+                formTitle: 'التسجيل في ورشة تطوير الألعاب',
+                labelName: ':اسم اللاعب',
+                labelEmail: ':البريد الإلكتروني',
+                labelRegNum: ':رقم التسجيل',
+                labelCollege: ':كليتك',
+                selectCollege: '...اختر كليتك',
+                collegeCS: 'علوم الحاسب',
+                collegeMT: 'الإدارة والتكنولوجيا',
+                collegeEng: 'الهندسة',
+                collegeLog: 'اللوجستيات',
+                collegeArch: 'الهندسة المعمارية',
+                labelSource: ':كيف سمعت عنا؟',
+                sourcePlaceholder: '...فيسبوك، صديق، إلخ',
+                joinButton: 'انضم للعبة',
+                savingButton: '...جاري الحفظ',
+                successTitle: '!اكتمل التسجيل',
+                successThanks: '،شكراً لانضمامك',
+                successSeeYou: 'نراك في الورشة',
+                successSurprise: '!ملاحظة: استعد لمفاجأة تعاون كبيرة مع المفضل لدى الجميع'
+            }
+        };
+        
+        // --- REBUILT Translation Function ---
+        function changeLanguage(lang) {
+            currentLang = lang;
+            const langData = translations[lang];
+            
+            // Set page direction
+            document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+            
+            document.querySelectorAll('[data-key]').forEach(element => {
+                const key = element.getAttribute('data-key');
+                if (langData[key]) {
+                    if (element.tagName === 'INPUT' && element.hasAttribute('placeholder')) {
+                        // Handle placeholders in input fields
+                        element.placeholder = langData[key];
+                    } else if (element.tagName === 'OPTION' && element.value === "") {
+                        // Handle the placeholder <option>
+                        element.textContent = langData[key];
+                    } else {
+                        // Handle all other text content
+                        element.textContent = langData[key];
+                    }
+                }
+            });
+
+            // Special fix for the <select> placeholder color in Arabic
+            const collegeSelect = document.getElementById('college');
+            if (lang === 'ar' && collegeSelect.value === "") {
+                collegeSelect.classList.add('text-gray-500'); // Or your placeholder color
+            } else {
+                collegeSelect.classList.remove('text-gray-500');
+            }
+        }
+
+
+        // --- 1. Loading Screen ---
+        // Reverted to original auto-fade logic
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                loadingScreen.classList.add('opacity-0', 'transition-opacity', 'duration-1000');
+                mainContent.classList.remove('opacity-0');
+                setTimeout(() => { loadingScreen.remove(); }, 1000);
+            }, 2500); 
+        });
+
+
+        // --- 2. Zoom Animation ---
+        function startZoomAnimation(event) {
+            if (event.type === 'touchstart') {
+                event.preventDefault();
+            }
+            document.body.classList.add('zooming');
+        }
+
+        // Add listeners for both click and touch
+        arcadeMachine.addEventListener('click', startZoomAnimation);
+        arcadeMachine.addEventListener('touchstart', startZoomAnimation);
+
+
+        // --- 3. Show Pop-up ---
+        // Listen for the zoom animation to finish
+        arcadeMachine.addEventListener('transitionend', (event) => {
+            // Make sure we're listening for the 'transform' property
+            if (event.propertyName === 'transform' && document.body.classList.contains('zooming')) {
+                // Show the popup overlay
+                popupOverlay.classList.remove('hidden');
+                // Ensure modal pop-in animation is reset/set
+                popupModal.style.animation = 'pop-in 0.3s ease-out';
+                // Hide the main content
+                mainContent.classList.add('hidden');
+            }
+        });
+
+
+        // --- 3. Close Pop-up & Reset Form ---
+        closePopupButton.addEventListener('click', () => {
+            // 1. Add the pop-out animation to the modal
+            popupModal.style.animation = 'pop-out 0.3s ease-in forwards';
+            
+            // 2. Listen for the animation to finish
+            popupModal.addEventListener('animationend', () => {
+                // 3. Hide the overlay
+                popupOverlay.classList.add('hidden');
+                
+                // 4. Reset the modal's animation style for next time
+                popupModal.style.animation = ''; 
+
+                // 5. Bring back main content (which will fade in)
+                mainContent.classList.remove('hidden');
+                
+                // 6. Remove the zoom class to animate the machine back
+                document.body.classList.remove('zooming');
+
+                // 7. Reset the form
+                registrationForm.reset();
+                registrationForm.classList.remove('hidden');
+                successMessage.classList.add('hidden');
+                
+                // 8. Reset submit button text
+                const submitButton = registrationForm.querySelector('.register-button');
+                submitButton.disabled = false;
+                submitButton.textContent = translations[currentLang].joinButton;
+
+            }, { once: true }); // { once: true } auto-removes the listener
+        });
+
+
+        // --- 4. Form Submission ---
+        registrationForm.addEventListener('submit', (event) => {
+            event.preventDefault(); 
+            
+            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsJfjPihz3y0eeN243Sg0_5XCBtdxnptgolIWl-1jvBrGApuGavnzxVwPzWO3OPcSIPw/exec';
+
+            if (SCRIPT_URL === 'PASTE_YOUR_NEW_DEPLOYMENT_URL_HERE' || SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_GOES_HERE') {
+                console.error("Please paste your Google Apps Script URL into the SCRIPT_URL variable.");
+                return; 
+            }
+
+            const nameInput = document.getElementById('name');
+            const submitButton = registrationForm.querySelector('.register-button');
+            const name = nameInput.value;
+
+            submitButton.disabled = true;
+            submitButton.textContent = translations[currentLang].savingButton;
+
+            const formData = new FormData(registrationForm);
+
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: formData
+            })
+            .catch(error => console.error('Error (ignored):', error));
+
+            setTimeout(() => {
+                // Update success message with player's name
+                const playerName = nameInput.value || (currentLang === 'ar' ? 'لاعب واحد' : 'PLAYER ONE');
+                const successName = successMessage.querySelector('#success-name');
+                successName.textContent = playerName;
+                
+                // Show success, hide form
+                registrationForm.classList.add('hidden');
+                successMessage.classList.remove('hidden');
+
+                // Don't re-enable button here, it's reset when modal is closed
+            }, 1000); // 1 second delay
+        }); 
+
+        // --- 5. Language Toggle ---
+        langToggle.addEventListener('click', () => {
+            const newLang = (currentLang === 'en') ? 'ar' : 'en';
+            changeLanguage(newLang);
+            
+            // Also update the submit button text if it's visible
+            const submitButton = registrationForm.querySelector('.register-button');
+            if (!submitButton.disabled) {
+                submitButton.textContent = translations[currentLang].joinButton;
+            }
+        });
+
+        // --- 6. Fix for Arabic Select Placeholder ---
+        document.getElementById('college').addEventListener('change', (e) => {
+            if (e.target.value === "") {
+                 e.target.classList.add('text-gray-500');
+            } else {
+                 e.target.classList.remove('text-gray-500');
+            }
+        });
+        // Initial check on load
+        changeLanguage(currentLang);
+
+    </script>
+</body>
+</html>
+
