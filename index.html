@@ -37,6 +37,27 @@
             font-family: 'Orbitron', sans-serif;
         }
         
+        /* --- Language Button Style --- */
+        #lang-toggle {
+            position: absolute;
+            top: 0px; /* Position above the box */
+            right: 0; /* Align to the right edge */
+            background: rgba(0, 229, 255, 0.2);
+            border: 1px solid #00e5ff;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Exo 2', sans-serif;
+            cursor: pointer;
+            z-index: 10; 
+            transition: all 0.2s;
+        }
+        #lang-toggle:hover {
+            background: #00e5ff;
+            color: #0c1427;
+            box-shadow: 0 0 10px #00e5ff;
+        }
+        
         /* --- Start Button --- */
         #start-button {
             background: #00e5ff;
@@ -243,6 +264,7 @@
         }
 
         #prompt-box {
+            position: relative; /* Added for absolute positioning of children like the language toggle */
             width: 90%;
             max-width: 500px;
             background: rgba(12, 20, 39, 0.9);
@@ -309,11 +331,13 @@
 </head>
 <body class="h-screen w-screen flex items-center justify-center p-4">
 
+    <!-- The language toggle is now moved inside the prompt-box -->
+
     <!-- ===== Start Button ===== -->
     <div id="start-container" class="text-center">
-        <h1 class="font-hud-title text-4xl mb-4 text-white">GDG Robotics Track</h1>
-        <h2 class="font-hud-title text-2xl mb-8 text-cyan-300">Registration Required</h2>
-        <button id="start-button">Begin Assembly</button>
+        <h1 class="font-hud-title text-4xl mb-4 text-white" data-en="GDG Robotics Track" data-ar="مسار GDG للروبوتات">GDG Robotics Track</h1>
+        <h2 class="font-hud-title text-2xl mb-8 text-cyan-300" data-en="Registration Required" data-ar="التسجيل مطلوب">Registration Required</h2>
+        <button id="start-button" data-en="Begin Assembly" data-ar="بدء التجميع">Begin Assembly</button>
     </div>
 
     <!-- ===== Main Assembly UI (Hidden by default) ===== -->
@@ -358,7 +382,10 @@
         <!-- Question Prompt -->
         <div id="prompt-container">
             <div id="prompt-box" class="p-6 space-y-4">
-                <h2 id="prompt-title" class="font-hud-title text-xl text-center uppercase">Registration Question</h2>
+                <!-- ===== Language Toggle Button (MOVED HERE) ===== -->
+                <button id="lang-toggle" onclick="switchLanguage()">عربي </button>
+                
+                <h2 id="prompt-title" class="font-hud-title text-xl text-center uppercase" data-en="Registration Question" data-ar="سؤال التسجيل">Registration Question</h2>
                 <p id="prompt-text" class="text-lg text-center text-white" style="min-height: 50px;"></p>
                 
                 <!-- Answer Area -->
@@ -381,7 +408,7 @@
                     </div>
 
                     <!-- Submit Button -->
-                    <button id="prompt-submit-button" class="hud-button w-full">Confirm</button>
+                    <button id="prompt-submit-button" class="hud-button w-full" data-en="Confirm" data-ar="تأكيد">Confirm</button>
                 </div>
                 
                 <!-- Error Message -->
@@ -389,9 +416,9 @@
 
                 <!-- Success Message -->
                 <div id="success-message" class="hidden text-center space-y-4">
-                    <h3 class="font-hud-title text-2xl text-green-400">Assembly Complete!</h3>
-                    <p id="success-name-display" class="text-xl">Welcome, Engineer.</p>
-                    <p>Registration confirmed for the GDG Robotics Track.</p>
+                    <h3 class="font-hud-title text-2xl text-green-400" data-en="Assembly Complete!" data-ar="اكتمال التجميع!">Assembly Complete!</h3>
+                    <p id="success-name-display" class="text-xl" data-en-prefix="Welcome, Engineer " data-ar-prefix="أهلا بك، مهندس "></p>
+                    <p data-en="Registration confirmed for the GDG Robotics Track." data-ar="تم تأكيد التسجيل في مسار GDG للروبوتات.">Registration confirmed for the GDG Robotics Track.</p>
                 </div>
             </div>
         </div>
@@ -421,6 +448,9 @@
         const promptError = document.getElementById('prompt-error');
         const successMessage = document.getElementById('success-message');
         const successNameDisplay = document.getElementById('success-name-display');
+        const langToggle = document.getElementById('lang-toggle');
+        const htmlElement = document.documentElement;
+
 
         // Robot Parts
         const robotParts = {
@@ -448,20 +478,208 @@
         // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxszHBBPrOTE0aLpXykaaTekbfyrGUcyGZUUa_cgxwR3GgdHCcfcthfaOGqhTF6Iq7d/exec'; 
 
+        // --- Translation Data ---
+        const translations = {
+            en: {
+                // Global UI elements
+                'GDG Robotics Track': 'GDG Robotics Track',
+                'Registration Required': 'Registration Required',
+                'Begin Assembly': 'Begin Assembly',
+                'Registration Question': 'Registration Question',
+                'Confirm': 'Confirm',
+                'Assembly Complete!': 'Assembly Complete!',
+                'Welcome, Engineer ': 'Welcome, Engineer ',
+                'Registration confirmed for the GDG Robotics Track.': 'Registration confirmed for the GDG Robotics Track.',
+                // Validation Errors
+                'A response is required.': 'A response is required.',
+                'Please enter a valid email format.': 'Please enter a valid email format.',
+                'AAST Registration Number must be 9 digits.': 'AAST Registration Number must be 9 digits.',
+                'ID Number must be 11 digits.': 'ID Number must be 11 digits.',
+                'This email is already registered. Please use a different one or contact support.': 'This email is already registered. Please use a different one or contact support.',
+                'Uplink failed.': 'Uplink failed. Please try again.',
+                // Question Prompts
+                'What is your full name?': 'What is your full name?',
+                'What is your email address?': 'What is your email address?',
+                'Which university are you at?': 'Which university are you at?',
+                'AAST': 'AAST',
+                'Other': 'Other',
+                'What is your university\'s name?': 'What is your university\'s name?',
+                'What is your college or faculty?': 'What is your college or faculty?',
+                'Which college are you in?': 'Which college are you in?',
+                'Computer Science': 'Computer Science',
+                'Engineering': 'Engineering',
+                'Management & Technology': 'Management & Technology',
+                'Logistics': 'Logistics',
+                'Archeology': 'Archeology',
+                'Enter your 9-digit Registration Number.': 'Enter your 9-digit Registration Number.',
+                'Enter your 11-digit ID Number.': 'Enter your 11-digit ID Number.',
+                'What is your experience level?': 'What is your experience level?',
+                'Beginner (Just starting)': 'Beginner (Just starting)',
+                'Intermediate (Built a few projects)': 'Intermediate (Built a few projects)',
+                'Advanced (Ready to compete)': 'Advanced (Ready to compete)',
+                'How did you hear about us?': 'How did you hear about us?',
+                // Placeholders & Select Defaults
+                'Enter your name...': 'Enter your name...',
+                'Enter your email...': 'Enter your email...',
+                'e.g., Cairo University': 'e.g., Cairo University',
+                'e.g., Faculty of Engineering': 'e.g., Faculty of Engineering',
+                '9 digits...': '9 digits...',
+                '11 digits...': '11 digits...',
+                'Select experience level...': 'Select experience level...',
+                'Select your college...': 'Select your college...',
+                'e.g., Social media, friend...': 'e.g., Social media, friend...',
+            },
+            ar: {
+                // Global UI elements
+                'GDG Robotics Track': 'مسار GDG للروبوتات',
+                'Registration Required': 'التسجيل مطلوب',
+                'Begin Assembly': 'بدء التجميع',
+                'Registration Question': 'سؤال التسجيل',
+                'Confirm': 'تأكيد',
+                'Assembly Complete!': 'اكتمال التجميع!',
+                'Welcome, Engineer ': 'أهلا بك، مهندس ',
+                'Registration confirmed for the GDG Robotics Track.': 'تم تأكيد التسجيل في مسار GDG للروبوتات.',
+                // Validation Errors
+                'A response is required.': 'الرجاء إدخال إجابة.',
+                'Please enter a valid email format.': 'الرجاء إدخال بريد إلكتروني صحيح.',
+                'AAST Registration Number must be 9 digits.': 'رقم التسجيل للأكاديمية يجب أن يكون 9 أرقام.',
+                'ID Number must be 11 digits.': 'رقم الهوية يجب أن يكون 11 رقمًا.',
+                'This email is already registered. Please use a different one or contact support.': 'هذا البريد الإلكتروني مسجل بالفعل. الرجاء استخدام بريد آخر أو التواصل مع الدعم.',
+                'Uplink failed.': 'فشل الاتصال. الرجاء المحاولة مرة أخرى.',
+                // Question Prompts
+                'What is your full name?': 'ما هو اسمك الكامل؟',
+                'What is your email address?': 'ما هو بريدك الإلكتروني؟',
+                'Which university are you at?': 'في أي جامعة تدرس؟',
+                'AAST': 'الأكاديمية (AAST)',
+                'Other': 'أخرى',
+                'What is your university\'s name?': 'ما هو اسم جامعتك؟',
+                'What is your college or faculty?': 'ما هي كليتك أو قسمك؟',
+                'Which college are you in?': 'ما هي كليتك؟',
+                'Computer Science': 'علوم الحاسب',
+                'Engineering': 'الهندسة',
+                'Management & Technology': 'الإدارة والتكنولوجيا',
+                'Logistics': 'اللوجستيات',
+                'Archeology': 'الآثار',
+                'Enter your 9-digit Registration Number.': 'أدخل رقم التسجيل المكون من 9 أرقام.',
+                'Enter your 11-digit ID Number.': 'أدخل رقم الهوية المكون من 11 رقمًا.',
+                'What is your experience level?': 'ما هو مستوى خبرتك؟',
+                'Beginner (Just starting)': 'مبتدئ (في البداية)',
+                'Intermediate (Built a few projects)': 'متوسط (نفذت عدة مشاريع)',
+                'Advanced (Ready to compete)': 'متقدم (جاهز للمنافسة)',
+                'How did you hear about us?': 'كيف عرفت عنا؟',
+                // Placeholders & Select Defaults
+                'Enter your name...': 'أدخل اسمك...',
+                'Enter your email...': 'أدخل بريدك الإلكتروني...',
+                'e.g., Cairo University': 'مثال: جامعة القاهرة',
+                'e.g., Faculty of Engineering': 'مثال: كلية الهندسة',
+                '9 digits...': '9 أرقام...',
+                '11 digits...': '11 رقمًا...',
+                'Select experience level...': 'اختر مستوى الخبرة...',
+                'Select your college...': 'اختر كليتك...',
+                'e.g., Social media, friend...': 'مثال: وسائل التواصل، صديق...',
+            }
+        };
+        
         // --- Form State ---
+        let currentLanguage = 'en'; // Default language is English
         let currentQuestionIndex = 0;
         const formData = {};
         
         // --- Question Database ---
-        // Note: Keys now match the Google Sheet Headers (case-sensitive)
         let questions = [
             { key: 'Name', prompt: 'What is your full name?', type: 'text', part: 'Name', placeholder: 'Enter your name...' },
             { key: 'Email', prompt: 'What is your email address?', type: 'email', part: 'Email', placeholder: 'Enter your email...' },
             { key: 'University', prompt: 'Which university are you at?', type: 'choice', choices: ['AAST', 'Other'], part: 'University' },
             // Conditional questions will be added here
             { key: 'Experience', prompt: 'What is your experience level?', type: 'select', options: ['Beginner (Just starting)', 'Intermediate (Built a few projects)', 'Advanced (Ready to compete)'], part: 'Experience' },
-            { key: 'Source', prompt: 'How did you hear about us?', type: 'text', placeholder: 'e.g., Social media, friend...', part: 'Source' }
+            { key: 'Source', prompt: 'How did you hear about us?', type: 'text', part: 'Source', placeholder: 'e.g., Social media, friend...' }
         ];
+
+        // --- Language Switching Logic ---
+        function getTranslation(key) {
+            return translations[currentLanguage][key] || key;
+        }
+
+        function switchLanguage() {
+            currentLanguage = currentLanguage === 'en' ? 'ar' : 'en';
+            htmlElement.lang = currentLanguage;
+            
+            // Set direction for Arabic
+            htmlElement.dir = currentLanguage === 'ar' ? 'rtl' : 'ltr';
+
+            // Update button text
+            langToggle.textContent = currentLanguage === 'en' ? 'عربي' : 'English';
+            
+            // Update static elements using data attributes
+            document.querySelectorAll('[data-en]').forEach(el => {
+                const key = el.getAttribute(`data-${currentLanguage}`);
+                if (key) el.textContent = key;
+            });
+
+            // Update placeholders
+            const placeholderKey = promptInput.getAttribute('data-placeholder-key');
+            if (placeholderKey) {
+                promptInput.placeholder = getTranslation(placeholderKey);
+            }
+
+            // Re-render current question to update dynamic text (prompt, choices, select options)
+            if (mainUI.classList.contains('hidden')) {
+                // If we are on the start screen, update the success message prefixes
+                const successPrefix = successNameDisplay.getAttribute(`data-${currentLanguage}-prefix`);
+                successNameDisplay.textContent = successPrefix + (formData.Name || '');
+            } else {
+                renderCurrentQuestion();
+            }
+        }
+        
+        function renderCurrentQuestion() {
+            if (currentQuestionIndex >= questions.length) {
+                // Update success screen text
+                const successPrefix = successNameDisplay.getAttribute(`data-${currentLanguage}-prefix`);
+                successNameDisplay.textContent = successPrefix + (formData.Name || '');
+                return;
+            }
+            
+            const question = questions[currentQuestionIndex];
+
+            // 1. Update Title and Prompt Text
+            const totalQuestions = questions.length;
+            promptTitle.textContent = getTranslation('Registration Question') + ` (${currentQuestionIndex + 1}/${totalQuestions})`;
+            promptText.textContent = getTranslation(question.prompt);
+
+            // 2. Handle Input Types
+            if (question.type === 'choice') {
+                inputChoiceGroup.innerHTML = ''; // Clear old ones
+                question.choices.forEach(choice => {
+                    const choiceText = getTranslation(choice);
+                    inputChoiceGroup.innerHTML += `<button class="hud-button" data-choice="${choice}">${choiceText}</button>`;
+                });
+            } else if (question.type === 'select') {
+                // Clear and re-populate select options with translated text
+                promptSelect.innerHTML = '';
+                const defaultOptionText = getTranslation(question.key === 'Experience' ? 'Select experience level...' : 'Select your college...');
+                
+                const defaultOption = document.createElement('option');
+                defaultOption.value = "";
+                defaultOption.textContent = defaultOptionText;
+                defaultOption.disabled = true;
+                defaultOption.selected = true;
+                promptSelect.appendChild(defaultOption);
+
+                question.options.forEach(opt => {
+                    const optionEl = document.createElement('option');
+                    optionEl.value = opt;
+                    optionEl.textContent = getTranslation(opt);
+                    promptSelect.appendChild(optionEl);
+                });
+            } else {
+                // 3. Handle Text/Email/Tel placeholders
+                const placeholderKey = question.placeholder || 'Enter response...';
+                promptInput.placeholder = getTranslation(placeholderKey);
+                promptInput.setAttribute('data-placeholder-key', placeholderKey); // Store key for future language switches
+            }
+        }
+
 
         // --- 1. Start Assembly ---
         startButton.addEventListener('click', () => {
@@ -526,11 +744,6 @@
             setTimeout(() => {
                 const question = questions[currentQuestionIndex];
                 
-                // Update question number, accounting for dynamically added questions
-                const totalQuestions = questions.length;
-                promptTitle.textContent = `Registration Question (${currentQuestionIndex + 1}/${totalQuestions})`;
-                promptText.textContent = question.prompt;
-
                 // Hide all input types
                 inputTextGroup.classList.add('hidden');
                 inputChoiceGroup.classList.add('hidden');
@@ -540,57 +753,36 @@
                 // Configure input type
                 if (question.type === 'choice') {
                     inputChoiceGroup.classList.remove('hidden');
-                    // Populate choices
-                    inputChoiceGroup.innerHTML = ''; // Clear old ones
-                    question.choices.forEach(choice => {
-                        inputChoiceGroup.innerHTML += `<button class="hud-button" data-choice="${choice}">${choice}</button>`;
-                    });
+                    submitButton.classList.remove('hidden'); // Show button even for choice for consistency
                 
                 } else if (question.type === 'select') {
                     inputSelectGroup.classList.remove('hidden');
                     submitButton.classList.remove('hidden');
-                    submitButton.textContent = 'Confirm';
-                    
-                    promptSelect.innerHTML = ''; // Clear old options
-                    // Add a default, non-selectable option
-                    let defaultOptionText = "Select an option...";
-                    if (question.key === 'Experience') defaultOptionText = "Select experience level...";
-                    if (question.key === 'College') defaultOptionText = "Select your college...";
-
-                    const defaultOption = document.createElement('option');
-                    defaultOption.value = "";
-                    defaultOption.textContent = defaultOptionText;
-                    defaultOption.disabled = true;
-                    defaultOption.selected = true;
-                    promptSelect.appendChild(defaultOption);
-
-                    question.options.forEach(opt => {
-                        const optionEl = document.createElement('option');
-                        optionEl.value = opt;
-                        optionEl.textContent = opt;
-                        promptSelect.appendChild(optionEl);
-                    });
-                    promptSelect.focus();
-
+                
                 } else { // Default to 'text', 'email', 'tel'
                     inputTextGroup.classList.remove('hidden');
                     submitButton.classList.remove('hidden');
-                    submitButton.textContent = 'Confirm';
-                    
-                    promptInput.type = question.type || 'text';
-                    promptInput.placeholder = question.placeholder || 'Enter response...';
-                    promptInput.value = ''; // Clear input
 
+                    promptInput.type = question.type || 'text';
                     // Remove old listener first to prevent duplicates
                     promptInput.removeEventListener('input', filterNumericInput);
                     // Add numeric filter for ID/Registration number questions
                     if (question.type === 'tel') {
                         promptInput.addEventListener('input', filterNumericInput);
                     }
-                    
-                    promptInput.focus();
                 }
                 
+                // Update all language dependent text for the new question
+                renderCurrentQuestion();
+                
+                // Clear input value and focus
+                if (question.type !== 'choice') {
+                     promptInput.value = ''; 
+                     promptInput.focus();
+                } else if (question.type === 'select') {
+                    promptSelect.focus();
+                }
+
                 // Fade in the prompt box
                 promptBox.style.opacity = 1;
                 promptBox.style.transform = 'translateY(0)'; // Move it up
@@ -634,12 +826,12 @@
             
             // --- Validation ---
             if (!answer || (question.type === 'select' && answer === "")) {
-                showError('A response is required.');
+                showError(getTranslation('A response is required.'));
                 return;
             }
             
             if (question.type === 'email' && !validateEmail(answer)) {
-                showError('Please enter a valid email format.');
+                showError(getTranslation('Please enter a valid email format.'));
                 return;
             }
 
@@ -651,12 +843,12 @@
                 const originalChoice = universityChoiceQ ? formData[universityChoiceQ.key] : null;
 
                 if (originalChoice === 'AAST' && answer.length !== 9) {
-                    showError('AAST Registration Number must be 9 digits.');
+                    showError(getTranslation('AAST Registration Number must be 9 digits.'));
                     return;
                 }
                 
                 if (originalChoice === 'Other' && answer.length !== 11) {
-                    showError('ID Number must be 11 digits.');
+                    showError(getTranslation('ID Number must be 11 digits.'));
                     return;
                 }
             }
@@ -729,8 +921,8 @@
 
         // --- 4. Final Submission to Google Sheet ---
         function submitFinalForm() {
-            promptTitle.textContent = 'Finalizing Assembly...';
-            promptText.textContent = 'Connecting components and logging registration...';
+            promptTitle.textContent = getTranslation('Finalizing Assembly...');
+            promptText.textContent = getTranslation('Connecting components and logging registration...');
             answerArea.classList.add('hidden');
             submitButton.disabled = true;
             
@@ -771,11 +963,14 @@
 
                 } else if (data.result === 'duplicate') {
                     // --- DUPLICATE EMAIL ERROR ---
-                    showError('This email is already registered. Please use a different one or contact support.');
+                    showError(getTranslation('This email is already registered. Please use a different one or contact support.'));
                     triggerAlertState();
                     answerArea.classList.remove('hidden');
                     submitButton.disabled = false;
-                    currentQuestionIndex = questions.findIndex(q => q.key === 'Email'); // Go back to email
+                    
+                    // Go back to email question index
+                    currentQuestionIndex = questions.findIndex(q => q.key === 'Email'); 
+
                     // Re-show the email question, don't re-assemble previous part
                     promptBox.style.opacity = 0;
                     promptBox.style.transform = 'translateY(50px)';
@@ -794,7 +989,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                showError(`Uplink failed. ${error.message}. Please try again.`);
+                showError(getTranslation('Uplink failed.') + ` ${error.message}.`);
                 triggerAlertState(); // Trigger alert for generic errors
                 answerArea.classList.remove('hidden');
                 submitButton.disabled = false;
@@ -846,7 +1041,7 @@
                 promptTitle.classList.add('hidden'); // Hide the "finalizing" title
                 
                 successMessage.classList.remove('hidden');
-                successNameDisplay.textContent = `Welcome, Engineer ${formData.Name || ''}!`;
+                renderCurrentQuestion(); // Update success message to current language
                 
                 promptBox.style.opacity = 1;
                 promptBox.style.transform = 'translateY(0)';
@@ -887,8 +1082,26 @@
 
         function clearAlertState() {
             promptBox.classList.remove('alert');
-            allRobotParts.forEach(part => part.classList.remove('alert'));
+            allRobotParts.forEach(part => {
+                part.classList.remove('alert');
+                part.classList.remove('success'); // Ensure success state is cleared too
+            });
         }
+        
+        // Initial setup for language
+        document.addEventListener('DOMContentLoaded', () => {
+            // Check browser preference for initial language (optional, defaults to 'en')
+            const initialLang = htmlElement.lang || 'en';
+            if (initialLang !== 'en') {
+                currentLanguage = initialLang;
+                langToggle.textContent = 'English'; // Set the toggle button label
+                htmlElement.dir = 'rtl';
+            }
+            // Apply initial translations
+            switchLanguage();
+            switchLanguage(); // Run twice to get it to the starting language (English) and apply translations
+        });
+
 
     </script>
 </body>
