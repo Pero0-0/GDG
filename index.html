@@ -3,613 +3,893 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GDG Game Dev Session</title>
+    <title>GDG Robotics Track</title>
     
     <!-- Load Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Load retro arcade font -->
+    <!-- Load futuristic fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <!-- Added 'Changa' for Arabic -->
-    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Changa:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Exo+2:wght@300;400;700&display=swap" rel="stylesheet">
     
-    <!-- Custom CSS for the arcade theme, animations, and components -->
     <style>
+        /* --- Base Setup --- */
         body {
-            /* Use Inter as a fallback, but prioritize the retro fonts */
-            font-family: 'VT323', 'Inter', sans-serif;
-            overflow: hidden; /* Prevent scrolling during animations */
-        }
-        
-        /* Font classes */
-        .font-arcade-title { font-family: 'Press Start 2P', cursive; }
-        .font-arcade-body { font-family: 'VT323', monospace; font-size: 1.5rem; }
-        .font-arabic { font-family: 'Changa', sans-serif; }
-
-        /* RTL (Right-to-Left) styles for Arabic */
-        html[dir="rtl"] .font-arcade-title {
-            font-family: 'Changa', sans-serif;
-            font-weight: 700;
-        }
-        html[dir="rtl"] .font-arcade-body {
-            font-family: 'Changa', sans-serif;
-            font-size: 1.25rem; /* Changa is more readable */
-            font-weight: 400;
-        }
-        html[dir="rtl"] label {
-            text-align: right;
-            display: block;
-        }
-        html[dir="rtl"] input, html[dir="rtl"] select {
-            text-align: right;
-        }
-        html[dir="rtl"] select {
-            /* Move dropdown arrow */
-            background-position: left 0.5rem center; 
-            padding-right: 0.5rem; /* Add padding for text */
-            padding-left: 2rem; /* Make room for arrow on left */
-        }
-        html[dir="rtl"] .title-bar span {
-            margin-left: auto; /* Push title to the right */
-        }
-        html[dir="rtl"] .title-bar .close-button {
-            margin-right: auto; /* Push close button to the left */
-        }
-
-
-        /* --- Loading Screen --- */
-        #loading-screen {
-            background-color: #000;
-            animation: pulse-neon 2s infinite alternate;
-        }
-
-        @keyframes pulse-neon {
-            from { text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 30px #ff00ff; color: #ff00ff; }
-            to { text-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff, 0 0 15px #00ffff; color: #00ffff; }
-        }
-        
-        /* --- Arcade Background --- */
-        #main-content {
-            background: #1a0a24;
+            font-family: 'Exo 2', 'Inter', sans-serif;
+            background-color: #0c1427; /* Dark blueprint blue */
+            color: #00e5ff;
+            overflow: hidden;
+            /* Blueprint grid background */
             background-image: 
-                linear-gradient(rgba(120, 80, 200, 0.1) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(120, 80, 200, 0.1) 1px, transparent 1px);
-            background-size: 40px 40px;
-            transition: opacity 0.5s ease-out; /* Added transition */
-            animation: scroll-background 60s linear infinite;
+                linear-gradient(rgba(0, 229, 255, 0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 229, 255, 0.1) 1px, transparent 1px);
+            background-size: 20px 20px;
+            animation: pan-background 60s linear infinite;
         }
 
-        @keyframes scroll-background {
+        @keyframes pan-background {
             from { background-position: 0 0; }
-            to { background-position: -800px 800px; } /* Scrolls diagonally */
+            to { background-position: 400px 400px; }
         }
 
-
-        /* --- Language Toggle Button --- */
-        #lang-toggle {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 100;
-            background: #fff;
-            color: #000080;
-            border: 2px solid #000080;
-            padding: 8px 12px;
-            font-family: 'Press Start 2P', cursive;
-            font-size: 0.75rem;
+        .font-hud-title {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        /* --- Start Button --- */
+        #start-button {
+            background: #00e5ff;
+            color: #0c1427;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            padding: 20px 40px;
+            border: 2px solid #00e5ff;
+            box-shadow: 0 0 30px #00e5ff;
+            transition: all 0.3s ease;
             cursor: pointer;
-            box-shadow: 2px 2px 0 #000;
+            animation: pulse-button 2s infinite alternate;
         }
-        html[dir="rtl"] #lang-toggle {
-            right: auto;
-            left: 20px;
+        #start-button:hover {
+            background: transparent;
+            color: #00e5ff;
+            box-shadow: 0 0 40px #00e5ff, inset 0 0 10px #00e5ff;
         }
-        #lang-toggle:active {
-            transform: translate(2px, 2px);
-            box-shadow: 0 0 0 #000;
+        @keyframes pulse-button {
+            from { transform: scale(1); }
+            to { transform: scale(1.05); }
         }
-
-
-        /* --- Arcade Machine (CSS Art) --- */
-        #arcade-machine {
-            width: 300px; 
-            transition: transform 1.5s ease-in-out, opacity 1s ease-in-out;
-            cursor: pointer;
-        }
-        .cabinet-top {
-            width: 100%; height: 80px; 
-            background: #d10000; 
-            border-radius: 10px 10px 0 0;
-            border: 4px solid #444; 
-            border-bottom: none; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 -5px 15px rgba(255, 0, 0, 0.5); 
-        }
-        .cabinet-screen-area {
-            width: 100%; 
-            background: #333; 
-            padding: 20px; 
-            border-left: 4px solid #444; 
-            border-right: 4px solid #444; 
-            transform: perspective(100px) rotateX(5deg); 
-        }
-        .screen {
-            width: 100%; height: 200px; 
-            background: #000; 
-            border: 10px solid #222; 
-            border-radius: 5px; 
-            color: #00ff00; 
-            display: flex; flex-direction: column;
-            align-items: center; justify-content: center;
-            box-shadow: inset 0 0 20px #00ff00, 0 0 10px #00ff00; 
-            animation: flicker 3s infinite;
-        }
-        @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: 0.8; } }
-        .cabinet-controls {
-            width: 100%; height: 100px; 
-            background: #555; 
-            border: 4px solid #444; 
-            border-top: 10px solid #444; 
-            border-radius: 0 0 10px 10px; 
-            display: flex;
-            align-items: center; justify-content: space-around; padding: 0 30px; 
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); 
-        }
-        .joystick {
-            width: 30px; height: 30px; 
-            background: #ff0000; 
-            border-radius: 50%;
-            border: 4px solid #a00000; 
+        
+        /* --- Robot Assembly Area --- */
+        #assembly-container {
             position: relative;
+            width: 400px;
+            height: 600px;
+            /* Dashed blueprint outline */
+            border: 2px dashed rgba(0, 229, 255, 0.3);
+            transition: all 0.5s ease-out;
+            /* Futuristic scanner line effect */
+            overflow: hidden;
         }
-        .joystick::before {
-            content: ''; position: absolute; width: 8px; height: 40px; 
-            background: #333;
-            bottom: 50%; left: 50%; transform: translateX(-50%); border-radius: 5px 5px 0 0; 
-        }
-        .arcade-button { 
-            width: 40px; height: 40px; 
-            border-radius: 50%; 
-            border: 4px solid #222; 
-            cursor: pointer; 
-        }
-        .button-blue { background: #0077ff; box-shadow: 0 0 10px #0077ff; } 
-        .button-green { background: #00ff00; box-shadow: 0 0 10px #00ff00; } 
-
         
-        /* --- Zoom Animation --- */
-        .zooming #arcade-machine {
-            transform: scale(25);
+        /* Scanner Line */
+        #assembly-container::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0, 229, 255, 0) 0%, rgba(0, 229, 255, 0.2) 50%, rgba(0, 229, 255, 0) 100%);
+            animation: scan-line 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
             opacity: 0;
+            transition: opacity 0.5s ease-out;
         }
-        .zooming #main-content {
+
+        /* Scanner line animation */
+        @keyframes scan-line {
+            0% {
+                transform: translateY(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(200%); /* 100% (element height) + 100% (to move offscreen) */
+                opacity: 0;
+            }
+        }
+        
+        /* This rule gets added by JS to show the scanner */
+        #assembly-container.scanning::before {
+            opacity: 1;
+        }
+
+        /* SVG Robot Part Styling */
+        .robot-part {
+            position: absolute;
+            fill: none;
+            stroke: #00e5ff; /* Default blueprint blue */
+            stroke-width: 2;
             opacity: 0;
-            transition: opacity 1s ease-in-out;
-        }
-
-
-        /* --- Fake Pop-up Window --- */
-        #popup-modal {
-            background: #c0c0c0; border: 2px solid #fff;
-            box-shadow: 2px 2px 0 #000, inset 2px 2px 0 #fff, inset -2px -2px 0 #808080;
-            animation: pop-in 0.3s ease-out;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275), stroke 0.3s ease, box-shadow 0.3s ease; /* Overshoot "snap" */
+            will-change: transform, opacity, stroke;
         }
         
-        @keyframes pop-in {
-            from {
-                opacity: 0;
-                transform: scale(0.5);
-            }
-            to {
-                opacity: 1;
-                transform: scale(1);
-            }
+        /* Error state for robot parts */
+        .robot-part.alert {
+            stroke: #ff4d4d !important; /* Red alert */
+            box-shadow: 0 0 15px #ff4d4d;
         }
         
-        @keyframes pop-out {
-            from {
-                opacity: 1;
-                transform: scale(1);
-            }
-            to {
-                opacity: 0;
-                transform: scale(0.5);
-            }
+        /* Success state for robot parts (New) */
+        .robot-part.success {
+            stroke: #4dff4d !important; /* Bright green */
+            box-shadow: 0 0 15px #4dff4d;
         }
 
-        .title-bar {
-            background: #000080; color: #fff; padding: 4px 8px; display: flex;
-            justify-content: space-between; align-items: center; font-family: 'VT323', monospace;
-            font-size: 1.25rem;
-        }
-        .close-button {
-            background: #c0c0c0; border: 1px solid #fff;
-            box-shadow: 1px 1px 0 #000, inset 1px 1px 0 #fff, inset -1px -1px 0 #808080;
-            color: #000; width: 20px; height: 20px; font-family: sans-serif;
-            font-weight: bold; line-height: 18px; text-align: center; cursor: pointer;
-        }
-        .close-button:active { box-shadow: inset 1px 1px 0 #000; border: 1px solid #808080; }
 
-        /* Form input styling */
-        .form-input {
-            background: #fff; border: 2px solid #808080;
-            box-shadow: inset 1px 1px 0 #000; padding: 8px;
-            font-family: 'VT323', monospace; font-size: 1.25rem; color: #000;
+        /* --- Part Assembly States --- */
+
+        /* Head */
+        #robot-head {
+            width: 150px;
+            top: 50px;
+            left: 125px;
+            transform: translateY(-100px);
         }
-        .form-input::placeholder { color: #808080; opacity: 1; }
-        .form-input:required:invalid { color: #808080; }
-        html[dir="rtl"] .form-input:required:invalid { color: #808080; }
+        #robot-head.assembled {
+            opacity: 1;
+            transform: translateY(0);
+        }
         
-        .register-button {
-            font-family: 'Press Start 2P', cursive; background: #00ff00;
-            color: #000; border: 4px solid #000; padding: 12px 20px;
-            box-shadow: 0 4px 0 #000; transition: all 0.1s ease;
+        /* Torso */
+        #robot-torso {
+            width: 200px;
+            top: 200px;
+            left: 100px;
+            transform: translateY(-100px);
         }
-        html[dir="rtl"] .register-button {
-            font-family: 'Changa', sans-serif;
+        #robot-torso.assembled {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Legs */
+        #robot-legs {
+            width: 180px;
+            top: 380px;
+            left: 110px;
+            transform: translateY(100px);
+        }
+        #robot-legs.assembled {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Arms */
+        #robot-arm-left {
+            width: 80px;
+            top: 220px;
+            left: 30px;
+            transform: translateX(-100px);
+        }
+        #robot-arm-left.assembled {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        #robot-arm-right {
+            width: 80px;
+            top: 220px;
+            left: 290px;
+            transform: translateX(100px);
+        }
+        #robot-arm-right.assembled {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        /* Core (Lights up at the end) */
+        #robot-core {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            top: 270px;
+            left: 175px;
+            border-radius: 50%;
+            background: #00e5ff; /* Default blue */
+            opacity: 0;
+            transform: scale(0);
+            box-shadow: 0 0 20px #00e5ff;
+            transition: all 0.5s ease, background 0.3s ease, box-shadow 0.3s ease;
+        }
+        #robot-core.assembled {
+            opacity: 1;
+            transform: scale(1);
+            animation: pulse-button 1s infinite alternate;
+        }
+        /* Error state for core */
+        #robot-core.alert {
+            background: #ff4d4d !important;
+            box-shadow: 0 0 20px #ff4d4d !important;
+        }
+        /* Success state for core (New) */
+        #robot-core.success {
+            background: #4dff4d !important;
+            box-shadow: 0 0 30px #4dff4d !important;
+        }
+
+        
+        /* --- Question Prompt Box --- */
+        #prompt-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center; /* Horizontally centers the prompt box */
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s ease-out;
+            padding: 1.5rem; /* Adds spacing from the bottom edge */
+        }
+        #prompt-container.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #prompt-box {
+            width: 90%;
+            max-width: 500px;
+            background: rgba(12, 20, 39, 0.9);
+            border: 2px solid #00e5ff; /* Default blueprint blue */
+            border-radius: 8px;
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.5); /* Default blue */
+            backdrop-filter: blur(5px);
+            color: #fff;
+            opacity: 0;
+            transform: translateY(50px); /* Start 50px down (hidden) */
+            transition: all 0.5s ease-out 0.3s, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        #prompt-container.visible #prompt-box {
+            opacity: 1;
+            transform: translateY(0); /* Animate to final position */
+        }
+        /* Error state for prompt box */
+        #prompt-box.alert {
+            border-color: #ff4d4d !important;
+            box-shadow: 0 0 30px rgba(255, 77, 77, 0.5) !important;
+        }
+
+        /* Shared input style */
+        .hud-input, .hud-button {
+            background: rgba(0, 50, 70, 0.7);
+            border: 1px solid #00e5ff;
+            color: #fff;
+            font-family: 'Exo 2', sans-serif;
+            border-radius: 4px;
+            padding: 10px 14px;
+            transition: all 0.3s ease;
+        }
+        .hud-input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        .hud-input:focus {
+            outline: none;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.7);
+            border-color: #fff;
+        }
+        .hud-input option {
+            background: #00141e;
+            color: #fff;
+        }
+        
+        .hud-button {
+            cursor: pointer;
             font-weight: 700;
-            font-size: 1rem;
+            text-transform: uppercase;
         }
-        .register-button:active { transform: translateY(4px); box-shadow: 0 0px 0 #000; }
-        
+        .hud-button:hover {
+            background: #00e5ff;
+            color: #0c1427;
+            box-shadow: 0 0 20px #00e5ff;
+        }
+        .hud-button:disabled {
+            background: rgba(50, 50, 50, 0.5);
+            color: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.3);
+            cursor: not-allowed;
+        }
+
     </style>
 </head>
-<body class="bg-black text-white">
+<body class="h-screen w-screen flex items-center justify-center p-4">
 
-    <!-- ===== Language Toggle Button ===== -->
-    <button id="lang-toggle" data-key="langToggle">AR</button>
-
-    <!-- ===== LOADING SCREEN ===== -->
-    <div id="loading-screen" class="fixed inset-0 z-50 flex items-center justify-center">
-        <!-- Text reverted to original -->
-        <h1 class="font-arcade-title text-3xl md:text-5xl" data-key="loading">LOADING...</h1>
+    <!-- ===== Start Button ===== -->
+    <div id="start-container" class="text-center">
+        <h1 class="font-hud-title text-4xl mb-4 text-white">GDG Robotics Track</h1>
+        <h2 class="font-hud-title text-2xl mb-8 text-cyan-300">Registration Required</h2>
+        <button id="start-button">Begin Assembly</button>
     </div>
 
-    <!-- ===== MAIN ARCADE CONTENT ===== -->
-    <main id="main-content" class="h-screen w-screen flex flex-col items-center justify-center p-8 opacity-0">
-        <h2 class="font-arcade-title text-2xl md:text-4xl text-center text-white mb-4" style="text-shadow: 0 0 10px #ff00ff;" data-key="mainTitle">GDG Game Dev Session</h2>
-        <p class="font-arcade-body text-xl md:text-2xl text-cyan-300 mb-8" data-key="mainSubtitle">Click the machine to register!</p>
+    <!-- ===== Main Assembly UI (Hidden by default) ===== -->
+    <div id="main-ui" class="hidden w-full h-full flex items-center justify-center">
         
-        <!-- The CSS Arcade Machine -->
-        <div id="arcade-machine">
-            <div class="cabinet-top"><h3 class="font-arcade-title text-lg text-yellow-300" style="text-shadow: 2px 2px #000;">GAME DEV</h3></div>
-            <div class="cabinet-screen-area">
-                <div class="screen font-arcade-body">
-                    <p class="text-xl mb-4">GDG PRESENTS</p>
-                    <p class="text-2xl animate-pulse" data-key="pressStart">PRESS START</p>
-                </div>
-            </div>
-            <div class="cabinet-controls">
-                <div class="joystick"></div>
-                <div class="flex space-x-4">
-                    <div class="arcade-button button-blue"></div>
-                    <div class="arcade-button button-green"></div>
-                </div>
-            </div>
+        <!-- Robot Blueprint -->
+        <div id="assembly-container">
+            <!-- Robot Parts (SVGs) -->
+            <!-- Head -->
+            <svg id="robot-head" class="robot-part" viewBox="0 0 100 100">
+                <rect x="15" y="10" width="70" height="60" rx="5" />
+                <rect x="30" y="25" width="15" height="15" fill="#00e5ff" />
+                <rect x="55" y="25" width="15" height="15" fill="#00e5ff" />
+                <rect x="25" y="50" width="50" height="5" />
+                <rect x="45" y="70" width="10" height="20" />
+            </svg>
+            <!-- Torso -->
+            <svg id="robot-torso" class="robot-part" viewBox="0 0 100 100">
+                <rect x="10" y="0" width="80" height="100" rx="10" />
+            </svg>
+            <!-- Legs -->
+            <svg id="robot-legs" class="robot-part" viewBox="0 0 100 100">
+                <rect x="10" y="0" width="30" height="80" rx="5" />
+                <rect x="60" y="0" width="30" height="80" rx="5" />
+                <rect x="5" y="80" width="40" height="15" rx="3" />
+                <rect x="55" y="80" width="40" height="15" rx="3" />
+            </svg>
+            <!-- Left Arm -->
+            <svg id="robot-arm-left" class="robot-part" viewBox="0 0 50 100">
+                <rect x="10" y="0" width="30" height="80" rx="5" />
+                <rect x="0" y="80" width="50" height="15" rx="3" />
+            </svg>
+            <!-- Right Arm -->
+            <svg id="robot-arm-right" class="robot-part" viewBox="0 0 50 100">
+                <rect x="10" y="0" width="30" height="80" rx="5" />
+                <rect x="0" y="80" width="50" height="15" rx="3" />
+            </svg>
+            <!-- Core -->
+            <div id="robot-core"></div>
         </div>
-    </main>
-
-    <!-- ===== FAKE POP-UP MODAL ===== -->
-    <div id="popup-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-10 flex items-center justify-center p-4 hidden">
-        <div id="popup-modal" class="w-full max-w-md z-20">
-            <!-- Title Bar -->
-            <div class="title-bar">
-                <span data-key="windowTitle">GDG_REG.EXE</span>
-                <div id="close-popup" class="close-button">X</div>
-            </div>
-            
-            <!-- Modal Content -->
-            <div class="p-6">
-                <!-- Registration Form -->
-                <form id="registration-form" class="space-y-4">
-                    <h3 class="font-arcade-title text-xl text-black" data-key="formTitle">Register for Game Dev Session</h3>
-                    
-                    <div>
-                        <label for="name" class="font-arcade-body text-black" data-key="labelName">PLAYER_NAME:</label>
-                        <input type="text" id="name" name="name" class="form-input w-full" required>
+        
+        <!-- Question Prompt -->
+        <div id="prompt-container">
+            <div id="prompt-box" class="p-6 space-y-4">
+                <h2 id="prompt-title" class="font-hud-title text-xl text-center uppercase">Registration Question</h2>
+                <p id="prompt-text" class="text-lg text-center text-white" style="min-height: 50px;"></p>
+                
+                <!-- Answer Area -->
+                <div id="answer-area" class="space-y-4">
+                    <!-- Standard Text Input -->
+                    <div id="input-text-group" class="hidden flex flex-col">
+                        <input type="text" id="prompt-input" class="hud-input w-full" placeholder="Enter response...">
                     </div>
                     
-                    <div>
-                        <label for="email" class="font-arcade-body text-black" data-key="labelEmail">PLAYER_EMAIL:</label>
-                        <input type="email" id="email" name="email" class="form-input w-full" required>
+                    <!-- Choice Buttons -->
+                    <div id="input-choice-group" class="hidden grid grid-cols-2 gap-4">
+                        <!-- Buttons populated by JS -->
                     </div>
-
-                    <div>
-                        <!-- UPDATED: Changed label data-key and input id/name -->
-                        <label for="idNumber" class="font-arcade-body text-black" data-key="labelIDNum">ID_Number / Register:</label>
-                        <input type="text" id="idNumber" name="idNumber" class="form-input w-full" required>
-                    </div>
-
-                    <div>
-                        <label for="college" class="font-arcade-body text-black" data-key="labelCollege">YOUR_COLLEGE:</label>
-                        <select id="college" name="college" class="form-input w-full" required>
-                            <option value="" disabled selected data-key="selectCollege">Select your college...</option>
-                            <option value="Computer Science" data-key="collegeCS">Computer Science</option>
-                            <option value="Management & Technology" data-key="collegeMT">Management & Technology</option>
-                            <option value="Engineering" data-key="collegeEng">Engineering</option>
-                            <option value="Logistics" data-key="collegeLog">Logistics</option>
-                            <option value="Archaeology" data-key="collegeArch">Archaeology</option>
-                            <!-- NEW: "Other" option -->
-                            <option value="Other" data-key="collegeOther">Other</option>
+                    
+                    <!-- Select Dropdown -->
+                    <div id="input-select-group" class="hidden flex flex-col">
+                        <select id="prompt-select" class="hud-input w-full">
+                            <!-- Options populated by JS -->
                         </select>
                     </div>
 
-                    <!-- NEW: "Other College" text field container, hidden by default -->
-                    <div id="other-college-container" class="hidden">
-                        <label for="otherCollege" class="font-arcade-body text-black" data-key="labelOtherCollege">Please specify:</label>
-                        <input type="text" id="otherCollege" name="otherCollege" class="form-input w-full">
-                    </div>
-                    
-                    <div>
-                        <label for="source" class="font-arcade-body text-black" data-key="labelSource">HOW_DID_YOU_HEAR?:</label>
-                        <input type="text" id="source" name="source" class="form-input w-full" required data-key="sourcePlaceholder" placeholder="e.g., Facebook, friend, etc.">
-                    </div>
-                    
-                    <div class="pt-4 flex justify-center">
-                        <button type="submit" class="register-button" data-key="joinButton">
-                            JOIN THE GAME
-                        </button>
-                    </div>
-                </form>
+                    <!-- Submit Button -->
+                    <button id="prompt-submit-button" class="hud-button w-full">Confirm</button>
+                </div>
                 
+                <!-- Error Message -->
+                <p id="prompt-error" class="text-red-400 text-center hidden"></p>
+
                 <!-- Success Message -->
-                <div id="success-message" class="hidden text-center">
-                    <h3 class="font-arcade-title text-xl text-black mb-4" data-key="successTitle">REGISTRATION COMPLETE!</h3>
-                    <p class="font-arcade-body text-black">
-                        <span data-key="successThanks">Thanks for joining,</span>
-                        <span id="success-name" class="font-arcade-title text-purple-700">PLAYER ONE</span>!
-                        <br><br>
-                        <span data-key="successSeeYou">We'll see you at the session.</span>
-                        <br><br>
-                        <span class="text-purple-700" data-key="successSurprise">P.S. Get ready for a big collab surprise with everyone's favorite!</span>
-                    </p>
+                <div id="success-message" class="hidden text-center space-y-4">
+                    <h3 class="font-hud-title text-2xl text-green-400">Assembly Complete!</h3>
+                    <p id="success-name-display" class="text-xl">Welcome, Engineer.</p>
+                    <p>Registration confirmed for the GDG Robotics Track.</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ===== JAVASCRIPT LOGIC ===== -->
     <script>
-        // Get all the elements we need
-        const loadingScreen = document.getElementById('loading-screen');
-        const mainContent = document.getElementById('main-content');
-        const arcadeMachine = document.getElementById('arcade-machine');
-        const popupOverlay = document.getElementById('popup-overlay');
-        const popupModal = document.getElementById('popup-modal');
-        const registrationForm = document.getElementById('registration-form');
-        const successMessage = document.getElementById('success-message');
-        const closePopupButton = document.getElementById('close-popup');
-        const langToggle = document.getElementById('lang-toggle');
-        // NEW: Get the college dropdown and the "Other" container
-        const collegeSelect = document.getElementById('college');
-        const otherCollegeContainer = document.getElementById('other-college-container');
-
-
-        let currentLang = 'en'; // Default language
-
-        // --- 0. Translations Database ---
-        const translations = {
-            'en': {
-                langToggle: 'AR',
-                loading: 'LOADING...', 
-                mainTitle: 'GDG Game Dev Session',
-                mainSubtitle: 'Click the machine to register!',
-                pressStart: 'PRESS START',
-                windowTitle: 'GDG_REG.EXE',
-                formTitle: 'Register for Game Dev Session',
-                labelName: 'PLAYER_NAME:',
-                labelEmail: 'PLAYER_EMAIL:',
-                labelIDNum: 'ID_Number / Register Number:', // UPDATED
-                labelCollege: 'YOUR_COLLEGE:',
-                selectCollege: 'Select your college...',
-                collegeCS: 'Computer Science',
-                collegeMT: 'Management & Technology',
-                collegeEng: 'Engineering',
-                collegeLog: 'Logistics',
-                collegeArch: 'Archaeology',
-                collegeOther: 'Other', // NEW
-                labelOtherCollege: 'Please specify:', // NEW
-                labelSource: 'HOW_DID_YOU_HEAR?:',
-                sourcePlaceholder: 'e.g., Facebook, friend, etc.',
-                joinButton: 'JOIN THE GAME',
-                savingButton: 'SAVING...',
-                successTitle: 'REGISTRATION COMPLETE!',
-                successThanks: 'Thanks for joining,',
-                successSeeYou: "We'll see you at the session.",
-                successSurprise: "P.S. Get ready for a big collab surprise with everyone's favorite!"
-            },
-            'ar': {
-                langToggle: 'EN',
-                loading: '...جاري التحميل', 
-                mainTitle: 'ورشة عمل GDG لتطوير الألعاب',
-                mainSubtitle: 'اضغط على الماكينة للتسجيل!',
-                pressStart: 'ابدأ اللعبة',
-                windowTitle: 'GDG_REG.EXE',
-                formTitle: 'التسجيل في ورشة تطوير الألعاب',
-                labelName: ':اسم اللاعب',
-                labelEmail: ':البريد الإلكتروني',
-                labelIDNum: ':رقم الهوية / رقم التسجيل', // UPDATED
-                labelCollege: ':كليتك',
-                selectCollege: '...اختر كليتك',
-                collegeCS: 'علوم الحاسب',
-                collegeMT: 'الإدارة والتكنولوجيا',
-                collegeEng: 'الهندسة',
-                collegeLog: 'اللوجستيات',
-                collegeArch: 'اثار وتراث حضاري',
-                collegeOther: 'أخرى', // NEW
-                labelOtherCollege: ':برجاء التحديد', // NEW
-                labelSource: ':كيف سمعت عنا؟',
-                sourcePlaceholder: '...فيسبوك، صديق، إلخ',
-                joinButton: 'انضم للعبة',
-                savingButton: '...جاري الحفظ',
-                successTitle: '!اكتمل التسجيل',
-                successThanks: '،شكراً لانضمامك',
-                successSeeYou: 'نراك في الورشة',
-                successSurprise: '!ملاحظة: استعد لمفاجأة تعاون كبيرة مع المفضل لدى الجميع'
-            }
-        }; 
+        // --- DOM Elements ---
+        const startContainer = document.getElementById('start-container');
+        const startButton = document.getElementById('start-button');
+        const mainUI = document.getElementById('main-ui');
+        const assemblyContainer = document.getElementById('assembly-container');
         
-        // --- REBUILT Translation Function ---
-        function changeLanguage(lang) {
-            currentLang = lang;
-            const langData = translations[lang];
+        const promptContainer = document.getElementById('prompt-container');
+        const promptBox = document.getElementById('prompt-box');
+        const promptTitle = document.getElementById('prompt-title');
+        const promptText = document.getElementById('prompt-text');
+        const answerArea = document.getElementById('answer-area');
+        
+        const inputTextGroup = document.getElementById('input-text-group');
+        const promptInput = document.getElementById('prompt-input');
+        
+        const inputChoiceGroup = document.getElementById('input-choice-group');
+        const inputSelectGroup = document.getElementById('input-select-group');
+        const promptSelect = document.getElementById('prompt-select');
+        
+        const submitButton = document.getElementById('prompt-submit-button');
+        const promptError = document.getElementById('prompt-error');
+        const successMessage = document.getElementById('success-message');
+        const successNameDisplay = document.getElementById('success-name-display');
+
+        // Robot Parts
+        const robotParts = {
+            Name: document.getElementById('robot-head'),
+            Email: document.getElementById('robot-torso'),
+            University: document.getElementById('robot-legs'), // Main part for all university steps
+            College: document.getElementById('robot-legs'), // Re-use legs part
+            UniversityID: document.getElementById('robot-legs'), // Re-use legs part
+            Experience: document.getElementById('robot-arm-left'),
+            Source: document.getElementById('robot-arm-right'),
+            final: document.getElementById('robot-core')
+        };
+
+        // Get all robot parts for global alert state control
+        const allRobotParts = document.querySelectorAll('.robot-part, #robot-core');
+
+
+        // --- Google Script URL ---
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        //
+        //  PASTE YOUR *OWN* GOOGLE APPS SCRIPT WEB APP URL HERE!
+        //  If you use the placeholder, your form will NOT save data.
+        //  Follow the `google_apps_script.gs.md` file to create your own.
+        //
+        // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxszHBBPrOTE0aLpXykaaTekbfyrGUcyGZUUa_cgxwR3GgdHCcfcthfaOGqhTF6Iq7d/exec'; 
+
+        // --- Form State ---
+        let currentQuestionIndex = 0;
+        const formData = {};
+        
+        // --- Question Database ---
+        // Note: Keys now match the Google Sheet Headers (case-sensitive)
+        let questions = [
+            { key: 'Name', prompt: 'What is your full name?', type: 'text', part: 'Name', placeholder: 'Enter your name...' },
+            { key: 'Email', prompt: 'What is your email address?', type: 'email', part: 'Email', placeholder: 'Enter your email...' },
+            { key: 'University', prompt: 'Which university are you at?', type: 'choice', choices: ['AAST', 'Other'], part: 'University' },
+            // Conditional questions will be added here
+            { key: 'Experience', prompt: 'What is your experience level?', type: 'select', options: ['Beginner (Just starting)', 'Intermediate (Built a few projects)', 'Advanced (Ready to compete)'], part: 'Experience' },
+            { key: 'Source', prompt: 'How did you hear about us?', type: 'text', placeholder: 'e.g., Social media, friend...', part: 'Source' }
+        ];
+
+        // --- 1. Start Assembly ---
+        startButton.addEventListener('click', () => {
+            // Fade out start button
+            startContainer.style.transition = 'opacity 0.5s ease-out';
+            startContainer.style.opacity = 0;
             
-            // Set page direction
-            document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
-            
-            document.querySelectorAll('[data-key]').forEach(element => {
-                const key = element.getAttribute('data-key');
-                if (langData[key]) {
-                    if (element.tagName === 'INPUT' && element.hasAttribute('placeholder')) {
-                        // Handle placeholders in input fields
-                        element.placeholder = langData[key];
-                    } else if (element.tagName === 'OPTION' && element.value === "") {
-                        // Handle the placeholder <option>
-                        element.textContent = langData[key];
+            setTimeout(() => {
+                startContainer.classList.add('hidden');
+                
+                // Show main UI
+                mainUI.classList.remove('hidden');
+                
+                // Show first question
+                promptContainer.classList.add('visible');
+                
+                // Start scanning animation
+                assemblyContainer.classList.add('scanning');
+
+                showNextQuestion();
+            }, 500);
+        });
+
+        // --- 2. Form Logic ---
+        function showNextQuestion() {
+            // Clear any alert states when moving to the next question
+            clearAlertState();
+
+            // Animate the *previous* part locking into place
+            if (currentQuestionIndex > 0) {
+                const prevQuestion = questions[currentQuestionIndex - 1];
+
+                // Special check for conditional logic. Only assemble legs ONCE.
+                if (prevQuestion && robotParts[prevQuestion.part]) {
+                    // Check if the part is one of the 'legs' parts
+                    if (prevQuestion.part === 'University' || prevQuestion.part === 'College' || prevQuestion.part === 'UniversityID') {
+                         // Only add 'assembled' if it's the *last* leg-related question or if the next is not a leg-related
+                         const nextQuestion = questions[currentQuestionIndex]; 
+                         if (!nextQuestion || (nextQuestion.part !== 'University' && nextQuestion.part !== 'College' && nextQuestion.part !== 'UniversityID')) {
+                             robotParts.University.classList.add('assembled');
+                         }
                     } else {
-                        // Handle all other text content
-                        element.textContent = langData[key];
-                        // THE ERROR WAS HERE. That stray text is GONE.
+                        // Not a leg part, just assemble it
+                        robotParts[prevQuestion.part].classList.add('assembled');
                     }
                 }
-            });
-
-            // Special fix for the <select> placeholder color
-            if (collegeSelect.value === "") {
-                collegeSelect.classList.add('text-gray-500');
-            } else {
-                collegeSelect.classList.remove('text-gray-500');
             }
-        }
+
+            // Check if we are done
+            if (currentQuestionIndex >= questions.length) {
+                submitFinalForm();
+                return;
+            }
+            
+            // Fade out the prompt box
+            promptBox.style.opacity = 0;
+            promptBox.style.transform = 'translateY(50px)'; // Move it down
+            promptError.classList.add('hidden');
 
 
-        // --- 1. Loading Screen ---
-        window.addEventListener('load', () => {
+            // Wait for the part to assemble (0.5s) before showing the next question
             setTimeout(() => {
-                loadingScreen.classList.add('opacity-0', 'transition-opacity', 'duration-1000');
-                mainContent.classList.remove('opacity-0');
-                setTimeout(() => { loadingScreen.remove(); }, 1000);
-            }, 2500); 
+                const question = questions[currentQuestionIndex];
+                
+                // Update question number, accounting for dynamically added questions
+                const totalQuestions = questions.length;
+                promptTitle.textContent = `Registration Question (${currentQuestionIndex + 1}/${totalQuestions})`;
+                promptText.textContent = question.prompt;
+
+                // Hide all input types
+                inputTextGroup.classList.add('hidden');
+                inputChoiceGroup.classList.add('hidden');
+                inputSelectGroup.classList.add('hidden');
+                submitButton.classList.add('hidden');
+
+                // Configure input type
+                if (question.type === 'choice') {
+                    inputChoiceGroup.classList.remove('hidden');
+                    // Populate choices
+                    inputChoiceGroup.innerHTML = ''; // Clear old ones
+                    question.choices.forEach(choice => {
+                        inputChoiceGroup.innerHTML += `<button class="hud-button" data-choice="${choice}">${choice}</button>`;
+                    });
+                
+                } else if (question.type === 'select') {
+                    inputSelectGroup.classList.remove('hidden');
+                    submitButton.classList.remove('hidden');
+                    submitButton.textContent = 'Confirm';
+                    
+                    promptSelect.innerHTML = ''; // Clear old options
+                    // Add a default, non-selectable option
+                    let defaultOptionText = "Select an option...";
+                    if (question.key === 'Experience') defaultOptionText = "Select experience level...";
+                    if (question.key === 'College') defaultOptionText = "Select your college...";
+
+                    const defaultOption = document.createElement('option');
+                    defaultOption.value = "";
+                    defaultOption.textContent = defaultOptionText;
+                    defaultOption.disabled = true;
+                    defaultOption.selected = true;
+                    promptSelect.appendChild(defaultOption);
+
+                    question.options.forEach(opt => {
+                        const optionEl = document.createElement('option');
+                        optionEl.value = opt;
+                        optionEl.textContent = opt;
+                        promptSelect.appendChild(optionEl);
+                    });
+                    promptSelect.focus();
+
+                } else { // Default to 'text', 'email', 'tel'
+                    inputTextGroup.classList.remove('hidden');
+                    submitButton.classList.remove('hidden');
+                    submitButton.textContent = 'Confirm';
+                    
+                    promptInput.type = question.type || 'text';
+                    promptInput.placeholder = question.placeholder || 'Enter response...';
+                    promptInput.value = ''; // Clear input
+
+                    // Remove old listener first to prevent duplicates
+                    promptInput.removeEventListener('input', filterNumericInput);
+                    // Add numeric filter for ID/Registration number questions
+                    if (question.type === 'tel') {
+                        promptInput.addEventListener('input', filterNumericInput);
+                    }
+                    
+                    promptInput.focus();
+                }
+                
+                // Fade in the prompt box
+                promptBox.style.opacity = 1;
+                promptBox.style.transform = 'translateY(0)'; // Move it up
+
+            }, 500); // 0.5s delay for "next question" feel
+        }
+        
+        // --- 3. Handle Answer Submission ---
+        
+        // Handle text/select input submission
+        submitButton.addEventListener('click', () => {
+            handleAnswerSubmission();
         });
 
-
-        // --- 2. Zoom Animation ---
-        function startZoomAnimation(event) {
-            if (event.type === 'touchstart') {
-                event.preventDefault();
+        // Allow 'Enter' key submission for text inputs
+        promptInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault(); // Stop default 'Enter' behavior (like submitting a form)
+                handleAnswerSubmission();
             }
-            document.body.classList.add('zooming');
+        });
+        
+        // Handle choice button submission
+        inputChoiceGroup.addEventListener('click', (e) => {
+            if (e.target.matches('.hud-button')) {
+                const answer = e.target.dataset.choice;
+                const questionKey = questions[currentQuestionIndex].key;
+                saveAnswer(questionKey, answer);
+            }
+        });
+
+        function handleAnswerSubmission() {
+            const question = questions[currentQuestionIndex];
+            let answer;
+
+            if (question.type === 'select') {
+                answer = promptSelect.value;
+            } else {
+                answer = promptInput.value;
+            }
+            
+            // --- Validation ---
+            if (!answer || (question.type === 'select' && answer === "")) {
+                showError('A response is required.');
+                return;
+            }
+            
+            if (question.type === 'email' && !validateEmail(answer)) {
+                showError('Please enter a valid email format.');
+                return;
+            }
+
+            // Length validation for University ID
+            if (question.key === 'UniversityID') {
+                
+                // The original choice (AAST or Other) is stored as the value of the first 'University' question
+                const universityChoiceQ = questions.find(q => q.key === 'University' && q.type === 'choice');
+                const originalChoice = universityChoiceQ ? formData[universityChoiceQ.key] : null;
+
+                if (originalChoice === 'AAST' && answer.length !== 9) {
+                    showError('AAST Registration Number must be 9 digits.');
+                    return;
+                }
+                
+                if (originalChoice === 'Other' && answer.length !== 11) {
+                    showError('ID Number must be 11 digits.');
+                    return;
+                }
+            }
+
+            saveAnswer(question.key, answer);
         }
 
-        // Add listeners for both click and touch
-        arcadeMachine.addEventListener('click', startZoomAnimation);
-        arcadeMachine.addEventListener('touchstart', startZoomAnimation);
+        function saveAnswer(key, answer) {
+            // Get the question being answered
+            const currentQ = questions[currentQuestionIndex];
 
+            // Special case 1: Handle the "Other University Name" overwrite.
+            const isUniversityNameQuestion = (key === 'University' && currentQ.type === 'text');
 
-        // --- 3. Show Pop-up ---
-        arcadeMachine.addEventListener('transitionend', (event) => {
-            if (event.propertyName === 'transform' && document.body.classList.contains('zooming')) {
-                popupOverlay.classList.remove('hidden');
-                popupModal.style.animation = 'pop-in 0.3s ease-out';
-                mainContent.classList.add('hidden');
+            if (isUniversityNameQuestion) {
+                // The actual university name (e.g., 'Cairo University') is saved in the 'University' key
+                formData['University'] = answer; 
+            } else {
+                formData[key] = answer; // Standard case
             }
-        });
 
-
-        // --- 3. Close Pop-up & Reset Form ---
-        closePopupButton.addEventListener('click', () => {
-            popupModal.style.animation = 'pop-out 0.3s ease-in forwards';
-            
-            popupModal.addEventListener('animationend', () => {
-                popupOverlay.classList.add('hidden');
-                popupModal.style.animation = ''; 
-                mainContent.classList.remove('hidden');
-                document.body.classList.remove('zooming');
-
-                registrationForm.reset();
-                registrationForm.classList.remove('hidden');
-                successMessage.classList.add('hidden');
+            // --- Conditional Question Setup / Pruning ---
+            // This logic MUST only run for the initial AAST/Other choice question (type: 'choice')
+            if (key === 'University' && currentQ.type === 'choice') {
                 
-                // NEW: Hide the "Other College" container on reset
-                otherCollegeContainer.classList.add('hidden');
+                // Remove all previous conditional questions (College, UniversityID, etc.)
+                questions = questions.filter(q => 
+                    q.key !== 'College' && 
+                    q.key !== 'UniversityID' && 
+                    // Filter out the *temporary* University name input if it exists from a previous 'Other' attempt
+                    !(q.key === 'University' && q.type === 'text')
+                );
+                
+                // Clear old conditional data from formData
+                delete formData['College'];
+                delete formData['UniversityID'];
 
-                const submitButton = registrationForm.querySelector('.register-button');
-                submitButton.disabled = false;
-                submitButton.textContent = translations[currentLang].joinButton;
-
-            }, { once: true });
-        });
-
-
-        // --- 4. Form Submission ---
-        registrationForm.addEventListener('submit', (event) => {
-            event.preventDefault(); 
+                let conditionalQuestions = [];
+                if (answer === 'AAST') {
+                    // If AAST is chosen, the University key remains 'AAST'
+                    conditionalQuestions = [
+                        { key: 'College', prompt: 'Which college are you in?', type: 'select', options: ['Computer Science', 'Engineering', 'Management & Technology', 'Logistics', 'Archeology'], part: 'College' },
+                        { key: 'UniversityID', prompt: 'Enter your 9-digit Registration Number.', type: 'tel', placeholder: '9 digits...', part: 'UniversityID' }
+                    ];
+                } else if (answer === 'Other') {
+                    // This is the beginning of the "Other" path. We save the choice 'Other' for validation,
+                    // but the name input below will overwrite the 'University' key with the actual name.
+                    conditionalQuestions = [
+                        // 1. Ask for the name of the "Other" university. Note: key is 'University' and type is 'text'
+                        { key: 'University', prompt: 'What is your university\'s name?', type: 'text', placeholder: 'e.g., Cairo University', part: 'University' },
+                        // 2. Then ask for college/faculty
+                        { key: 'College', prompt: 'What is your college or faculty?', type: 'text', placeholder: 'e.g., Faculty of Engineering', part: 'College' },
+                        // 3. Then ask for the ID Number
+                        { key: 'UniversityID', prompt: 'Enter your 11-digit ID Number.', type: 'tel', placeholder: '11 digits...', part: 'UniversityID' }
+                    ];
+                }
+                // Insert new questions *after* the current one
+                questions.splice(currentQuestionIndex + 1, 0, ...conditionalQuestions);
+            }
             
-            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwsJfjPihz3y0eeN243Sg0_5XCBtdxnptgolIWl-1jvBrGApuGavnzxVwPzWO3OPcSIPw/exec';
+            // --- FIX: Explicit Leg Assembly after completing the University ID field ---
+            if (key === 'UniversityID') {
+                // This ensures the legs assemble correctly after the last University-related question is answered.
+                robotParts.University.classList.add('assembled');
+            }
+            
+            currentQuestionIndex++;
+            showNextQuestion();
+        }
 
-            if (SCRIPT_URL === 'PASTE_YOUR_NEW_DEPLOYMENT_URL_HERE' || SCRIPT_URL === 'YOUR_GOOGLE_APPS_SCRIPT_URL_GOES_HERE') {
-                console.error("Please paste your Google Apps Script URL into the SCRIPT_URL variable.");
-                return; 
+        // --- 4. Final Submission to Google Sheet ---
+        function submitFinalForm() {
+            promptTitle.textContent = 'Finalizing Assembly...';
+            promptText.textContent = 'Connecting components and logging registration...';
+            answerArea.classList.add('hidden');
+            submitButton.disabled = true;
+            
+            // Check for placeholder URL
+            if (SCRIPT_URL.includes('PASTE_YOUR_NEW_WEB_APP_URL_HERE')) {
+                console.warn("SCRIPT_URL is not set! Simulating success for testing.");
+                // Simulate success for local testing
+                setTimeout(() => {
+                    robotParts.final.classList.add('assembled');
+                    showSuccessScreen();
+                }, 1000); 
+                return; // Don't try to fetch
+            }
+            
+            const finalFormData = new FormData();
+            for (const key in formData) {
+                // Skip the temporary 'Other' placeholder if the user entered a name afterwards
+                if (key === 'University' && formData[key] === 'Other') {
+                    // This should ideally be handled by the logic above, but this is a final cleanup
+                    continue; 
+                }
+                finalFormData.append(key, formData[key]);
             }
 
-            const nameInput = document.getElementById('name');
-            const submitButton = registrationForm.querySelector('.register-button');
-            const name = nameInput.value;
-
-            submitButton.disabled = true;
-            submitButton.textContent = translations[currentLang].savingButton;
-
-            const formData = new FormData(registrationForm);
-
+            // --- Fetch call to Google Apps Script ---
             fetch(SCRIPT_URL, {
                 method: 'POST',
-                mode: 'no-cors',
-                body: formData
+                body: finalFormData
             })
-            .catch(error => console.error('Error (ignored):', error));
+            .then(response => response.json())
+            .then(data => {
+                if (data.result === 'success') {
+                    // --- SUCCESS ---
+                    // Light up the core
+                    robotParts.final.classList.add('assembled');
+                    // Show the success message screen
+                    showSuccessScreen();
 
-            setTimeout(() => {
-                const playerName = nameInput.value || (currentLang === 'ar' ? 'لاعب واحد' : 'PLAYER ONE');
-                const successName = successMessage.querySelector('#success-name');
-                successName.textContent = playerName;
+                } else if (data.result === 'duplicate') {
+                    // --- DUPLICATE EMAIL ERROR ---
+                    showError('This email is already registered. Please use a different one or contact support.');
+                    triggerAlertState();
+                    answerArea.classList.remove('hidden');
+                    submitButton.disabled = false;
+                    currentQuestionIndex = questions.findIndex(q => q.key === 'Email'); // Go back to email
+                    // Re-show the email question, don't re-assemble previous part
+                    promptBox.style.opacity = 0;
+                    promptBox.style.transform = 'translateY(50px)';
+                    setTimeout(() => {
+                        // We must reset the index back 1 step so showNextQuestion processes the email as the *current* question
+                        currentQuestionIndex = questions.findIndex(q => q.key === 'Email');
+                        showNextQuestion(); // This will clear the alert
+                        // Set the email input value back if it was an error
+                        promptInput.value = formData.Email || ''; 
+                    }, 500); 
+
+                } else {
+                    // --- OTHER SCRIPT ERROR ---
+                    throw new Error(data.error || 'Unknown uplink error.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showError(`Uplink failed. ${error.message}. Please try again.`);
+                triggerAlertState(); // Trigger alert for generic errors
+                answerArea.classList.remove('hidden');
+                submitButton.disabled = false;
                 
-                registrationForm.classList.add('hidden');
+                // Find the last non-conditional question index to restart from (e.g., source)
+                let lastQuestionIndex = questions.findIndex(q => q.key === 'Source');
+                if (lastQuestionIndex === -1) lastQuestionIndex = questions.length - 1; 
+
+                // If error happened early, go back to the current question for retry
+                if (currentQuestionIndex > lastQuestionIndex) { 
+                    currentQuestionIndex = lastQuestionIndex;
+                }
+                
+                // De-assemble the last couple of parts for visual feedback on error
+                robotParts.Experience.classList.remove('assembled');
+                robotParts.Source.classList.remove('assembled');
+                
+                // Re-show the current question
+                promptBox.style.opacity = 0;
+                promptBox.style.transform = 'translateY(50px)';
+                setTimeout(showNextQuestion, 500); 
+            });
+        }
+
+        function showSuccessScreen() {
+            answerArea.classList.add('hidden');
+            promptError.classList.add('hidden'); // Hide error just in case
+            
+            // Fade out the prompt box completely
+            promptBox.style.opacity = 0;
+            promptBox.style.transform = 'translateY(50px)';
+            
+            // Stop scanning animation
+            assemblyContainer.classList.remove('scanning');
+
+            // NEW: Apply green success state to all assembled robot parts and the core
+            allRobotParts.forEach(part => {
+                // Ensure core is assembled if it wasn't already
+                if (part.id === 'robot-core') {
+                    part.classList.add('assembled'); // Ensure it's scaled up
+                }
+                part.classList.remove('alert'); // Remove red alert just in case
+                part.classList.add('success'); // Turn it green
+            });
+
+            // After a moment, fade the prompt box back in with the success message
+            setTimeout(() => {
+                promptText.classList.add('hidden'); // Hide the "finalizing" text
+                promptTitle.classList.add('hidden'); // Hide the "finalizing" title
+                
                 successMessage.classList.remove('hidden');
-            }, 1000); 
-        }); 
+                successNameDisplay.textContent = `Welcome, Engineer ${formData.Name || ''}!`;
+                
+                promptBox.style.opacity = 1;
+                promptBox.style.transform = 'translateY(0)';
+            }, 500);
+        }
 
-        // --- 5. Language Toggle ---
-        langToggle.addEventListener('click', () => {
-            const newLang = (currentLang === 'en') ? 'ar' : 'en';
-            changeLanguage(newLang);
-            
-            const submitButton = registrationForm.querySelector('.register-button');
-            if (!submitButton.disabled) {
-                submitButton.textContent = translations[currentLang].joinButton;
+        // --- 5. Utility Functions ---
+        function showError(message) {
+            promptError.textContent = message;
+            promptError.classList.remove('hidden');
+        }
+        
+        function validateEmail(email) {
+            // Standard email regex
+            const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,:;\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+            return re.test(String(email).toLowerCase());
+        }
+
+        function filterNumericInput(e) {
+            // This function now only cleans the value.
+            // It allows navigation keys to be pressed.
+            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+        }
+
+        // Add a more robust input event listener for filtering
+        // This handles paste and other inputs better than keydown
+        promptInput.addEventListener('input', (e) => {
+            if (e.target.type === 'tel') {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
             }
         });
 
-        // --- 6. Show/Hide "Other College" field ---
-        collegeSelect.addEventListener('change', (e) => {
-            if (e.target.value === 'Other') {
-                otherCollegeContainer.classList.remove('hidden');
-            } else {
-                otherCollegeContainer.classList.add('hidden');
-            }
-            
-            // Fix for placeholder color
-            if (e.target.value === "") {
-                 e.target.classList.add('text-gray-500');
-            } else {
-                 e.target.classList.remove('text-gray-500');
-            }
-        });
+        // --- Alert State Functions ---
+        function triggerAlertState() {
+            promptBox.classList.add('alert');
+            allRobotParts.forEach(part => part.classList.add('alert'));
+        }
 
-        // Initial check on load
-        changeLanguage(currentLang);
+        function clearAlertState() {
+            promptBox.classList.remove('alert');
+            allRobotParts.forEach(part => part.classList.remove('alert'));
+        }
 
     </script>
 </body>
 </html>
-
-
